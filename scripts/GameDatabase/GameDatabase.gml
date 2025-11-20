@@ -71,15 +71,10 @@ function init_database() {
     );
 
     // --- 6. ADD THE AXOLOTL ---
-    // Move 1: Healing - Regenerate
     var move_regenerate = new MoveData("Regenerate", 0, 100, "Regrows cells.", "Heals 50 HP.", 
         MOVE_TYPE.HEAL, 50);
-        
-    // Move 2: Damage - Gill Slap
     var move_gill_slap = new MoveData("Gill Slap", 40, 100, "A squishy slap.", "A quick physical attack.", 
         MOVE_TYPE.DAMAGE);
-        
-    // Move 3: Damage + Debuff - Mud Shot
     var move_mud_shot = new MoveData("Mud Shot", 20, 95, "Fling mud.", "Damage + Lowers Speed.", 
         MOVE_TYPE.DAMAGE); 
 
@@ -340,15 +335,27 @@ function init_database() {
         "Avg. Size: 1.3 kg"
     );
 
-    // --- 25. ADD THE SEAGULL ---
-    var move_sig_seagull = new MoveData("Dive", 45, 100, "A fast aerial dive.", "A powerful flying attack.", MOVE_TYPE.DAMAGE);
+    // --- 25. ADD THE SEAGULL (UPDATED) ---
+    
+    // Move 1: Damage - Dive
+    var move_dive = new MoveData("Dive", 50, 90, "A fast aerial strike.", "A powerful diving attack.", 
+        MOVE_TYPE.DAMAGE);
+        
+    // Move 2: Damage - Wing Smack (Reused from Goose)
+    var move_wing_smack = new MoveData("Wing Smack", 40, 100, "A quick slap.", "Strikes with wings.",
+        MOVE_TYPE.DAMAGE);
+
+    // Move 3: Debuff - Squawk
+    var move_squawk = new MoveData("Squawk", 0, 100, "A loud cry.", "Lowers enemy defense.", 
+        MOVE_TYPE.STAT_DEBUFF, -1);
+        
     global.bestiary.seagull = new AnimalData(
         "Seagull",
         90, 120, 70, 150, 5, // Speedy Attacker
         spr_seagull_idle, 
         spr_seagull_idle_back, 
         spr_seagull_idle, 
-        [global.GENERIC_MOVE_LUNGE, move_sig_seagull, global.GENERIC_MOVE_AGITATE], 
+        [ move_dive, move_wing_smack, move_squawk ], 
         "A medium to large bird. It is typically grey or white, with black markings.", 
         "Avg. Size: 1.0 kg"
     );

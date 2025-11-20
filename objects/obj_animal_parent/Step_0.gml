@@ -335,7 +335,7 @@ else if (vfx_type == "bite") {
     if (vfx_timer <= 0) vfx_type = "none";
 }
 
-// --- NEW: HEARTS LOGIC (Floating Up) ---
+// --- HEARTS LOGIC ---
 else if (vfx_type == "hearts") {
     if (vfx_timer % 10 == 0 && vfx_timer > 0) {
         var _h = sprite_get_height(sprite_index) * my_scale;
@@ -359,7 +359,7 @@ else if (vfx_type == "hearts") {
     if (vfx_timer <= 0 && array_length(vfx_particles) == 0) vfx_type = "none";
 }
 
-// --- NEW: MUD LOGIC (Arcing Projectile) ---
+// --- MUD LOGIC ---
 else if (vfx_type == "mud") {
     if (vfx_timer == 30) { // Spawn 3 mud globs
         for(var k=0; k<3; k++) {
@@ -389,17 +389,54 @@ else if (vfx_type == "mud") {
     if (vfx_timer <= 0 && array_length(vfx_particles) == 0) vfx_type = "none";
 }
 
-// --- NEW: SLAP LOGIC (Flash) ---
+// --- SLAP LOGIC ---
 else if (vfx_type == "slap") {
-    // Just a timer for the draw event
     vfx_timer--;
     if (vfx_timer <= 0) vfx_type = "none";
+}
+
+// --- NEW: DIVE LOGIC (Seagull) ---
+else if (vfx_type == "dive") {
+    switch (vfx_state) {
+        case 0: // Rise Up
+            y -= 15; // Rise quickly
+            if (y < home_y - 300) { // Go off screen
+                vfx_state = 1;
+                vfx_timer = 15; // Hover/Wait for a moment
+            }
+            break;
+            
+        case 1: // Dive Down
+            if (vfx_timer > 0) {
+                vfx_timer--; // Wait
+            } else {
+                // Move towards target fast!
+                var _dir = point_direction(x, y, vfx_target_x, vfx_target_y);
+                var _dist = point_distance(x, y, vfx_target_x, vfx_target_y);
+                
+                var _speed = 40; // Very fast dive
+                x += lengthdir_x(_speed, _dir);
+                y += lengthdir_y(_speed, _dir);
+                
+                if (_dist < _speed) {
+                    vfx_state = 2;
+                    vfx_timer = 30; // Wait at target briefly (optional)
+                }
+            }
+            break;
+            
+        case 2: // Return Home (Reset)
+            x = home_x;
+            y = home_y;
+            vfx_type = "none";
+            break;
+    }
 }
 
 // ========================================================
 
 
-// --- 3. Run State Logic (UPDATED FOR SPEED) ---
+// --- 3. Run State Logic (UPDATED) ---
 if (is_fainting) {
     if (faint_scale_y > 0) {
         faint_scale_y -= 0.02; faint_alpha -= 0.02;   
@@ -412,23 +449,27 @@ if (is_fainting) {
     lunge_current_y = random_range(-3, 3); 
 } else {
     if (!variable_instance_exists(id, "lunge_speed")) lunge_speed = 0.1;
-    switch (lunge_state) {
-        case 1: // Lunge Forward
-            lunge_current_x = lerp(lunge_current_x, lunge_target_x - home_x, lunge_speed);
-            lunge_current_y = lerp(lunge_current_y, lunge_target_y - home_y, lunge_speed); 
-            if (abs(lunge_current_x - (lunge_target_x - home_x)) < 5) lunge_state = 2;
-            break;
-        case 2: // Return Home
-            lunge_current_x = lerp(lunge_current_x, 0, 0.1);
-            lunge_current_y = lerp(lunge_current_y, 0, 0.1); 
-            if (abs(lunge_current_x) < 1 && abs(lunge_current_y) < 1) {
-                lunge_current_x = 0; lunge_current_y = 0; lunge_state = 0; lunge_speed = 0.1;
-            }
-            break;
-        default:
-            lunge_current_x = 0; lunge_current_y = 0;
-            break;
+    
+    // ** FIX: Don't override position if diving **
+    if (vfx_type != "dive") {
+        switch (lunge_state) {
+            case 1: // Lunge Forward
+                lunge_current_x = lerp(lunge_current_x, lunge_target_x - home_x, lunge_speed);
+                lunge_current_y = lerp(lunge_current_y, lunge_target_y - home_y, lunge_speed); 
+                if (abs(lunge_current_x - (lunge_target_x - home_x)) < 5) lunge_state = 2;
+                break;
+            case 2: // Return Home
+                lunge_current_x = lerp(lunge_current_x, 0, 0.1);
+                lunge_current_y = lerp(lunge_current_y, 0, 0.1); 
+                if (abs(lunge_current_x) < 1 && abs(lunge_current_y) < 1) {
+                    lunge_current_x = 0; lunge_current_y = 0; lunge_state = 0; lunge_speed = 0.1;
+                }
+                break;
+            default:
+                lunge_current_x = 0; lunge_current_y = 0;
+                break;
+        }
+        x = home_x + lunge_current_x;
+        y = home_y + lunge_current_y;
     }
 }
-x = home_x + lunge_current_x;
-y = home_y + lunge_current_y;

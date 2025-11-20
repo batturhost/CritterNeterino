@@ -18,6 +18,11 @@ if (preview_critter != noone) {
     }
 }
 
+// ================== NEW: UPDATE PC ANIMATION TIMER ==================
+// We increment this indefinitely. The modulo % in Draw event handles the loop.
+pc_anim_frame += pc_anim_speed;
+// ====================================================================
+
 // --- 2. Button Logic ---
 btn_close_hover = point_in_box(_mx, _my, btn_close_x1, btn_close_y1, btn_close_x2, btn_close_y2);
 btn_to_team_hover = point_in_box(_mx, _my, btn_to_team_x1, btn_to_team_y1, btn_to_team_x2, btn_to_team_y2);
@@ -192,7 +197,7 @@ if (_scroll != 0 && feedback_message_timer <= 0 && !is_dragging_critter) {
     }
 }
 
-// --- 6. WINDOW DRAGGING & RECALCULATION ---
+// --- 6. WINDOW DRAGGING LOGIC ---
 if (mouse_check_button_pressed(mb_left)) {
     if (global.dragged_window == noone) {
         if (point_in_box(_mx, _my, window_x1, window_y1, window_x2, window_y1 + 32) && !btn_close_hover) {
@@ -205,46 +210,38 @@ if (mouse_check_button_pressed(mb_left)) {
         }
     }
 }
-
 if (mouse_check_button_released(mb_left)) {
     is_dragging = false;
     if (global.dragged_window == id) {
         global.dragged_window = noone;
     }
 }
-
 if (is_dragging) {
     window_x1 = _mx + drag_dx;
     window_y1 = _my + drag_dy;
     
     // --- 7. RECALCULATE ALL UI POSITIONS ---
-    // (Only needed when moving)
     window_x2 = window_x1 + window_width;
     window_y2 = window_y1 + window_height;
-
     team_list_x1 = window_x1 + 20;
     team_list_y1 = window_y1 + 80;
     team_list_x2 = team_list_x1 + team_list_w;
     team_list_y2 = team_list_y1 + team_list_h;
-
     pc_list_x1 = window_x1 + window_width - 250 - 20;
     pc_list_y1 = window_y1 + 80;
     pc_list_x2 = pc_list_x1 + pc_list_w;
     pc_list_y2 = pc_list_y1 + pc_list_h;
-
     btn_close_x1 = window_x2 - 28;
     btn_close_y1 = window_y1 + 6;
     btn_close_x2 = window_x2 - 6;
     btn_close_y2 = window_y1 + 28;
-
     var _mid_x = window_x1 + (window_width / 2);
     btn_to_team_x1 = _mid_x - (btn_w / 2);
     btn_to_team_y1 = window_y1 + 350;
     btn_to_team_x2 = btn_to_team_x1 + btn_w;
     btn_to_team_y2 = btn_to_team_y1 + btn_h;
-
     btn_to_pc_x1 = _mid_x - (btn_w / 2);
     btn_to_pc_y1 = btn_to_team_y2 + 10;
     btn_to_pc_x2 = btn_to_pc_x1 + btn_w;
     btn_to_pc_y2 = btn_to_pc_y1 + btn_h;
-}_y2 = btn_to_pc_y1 + btn_h;
+}

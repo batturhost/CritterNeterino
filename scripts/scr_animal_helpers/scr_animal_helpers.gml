@@ -109,28 +109,28 @@ function effect_play_shockwave(_actor_object) {
 function effect_play_bite(_actor_object) {
     _actor_object.vfx_type = "bite"; _actor_object.vfx_particles = []; _actor_object.vfx_timer = 20;
 }
-
-// --- NEW: HEARTS (Regenerate) ---
 function effect_play_hearts(_actor_object) {
-    _actor_object.vfx_type = "hearts";
-    _actor_object.vfx_particles = [];
-    _actor_object.vfx_timer = 60;
+    _actor_object.vfx_type = "hearts"; _actor_object.vfx_particles = []; _actor_object.vfx_timer = 60;
 }
-
-// --- NEW: MUD (Mud Shot) ---
 function effect_play_mud(_actor_object, _target) {
-    _actor_object.vfx_type = "mud";
-    _actor_object.vfx_particles = [];
-    _actor_object.vfx_timer = 30;
-    
-    // Store target position relative to self for the arc calc
+    _actor_object.vfx_type = "mud"; _actor_object.vfx_particles = []; _actor_object.vfx_timer = 30;
     _actor_object.vfx_target_dx = _target.x - _actor_object.x;
     _actor_object.vfx_target_dy = _target.y - _actor_object.y;
 }
-
-// --- NEW: SLAP (Gill Slap) ---
 function effect_play_slap(_actor_object) {
-    _actor_object.vfx_type = "slap";
+    _actor_object.vfx_type = "slap"; _actor_object.vfx_particles = []; _actor_object.vfx_timer = 15;
+}
+
+// --- NEW: DIVE (Seagull) ---
+function effect_play_dive(_actor_object, _target) {
+    _actor_object.vfx_type = "dive";
     _actor_object.vfx_particles = [];
-    _actor_object.vfx_timer = 15; // Very fast smack
+    
+    // Initialize dive state variables
+    _actor_object.vfx_state = 0; // 0: Rise, 1: Hover/Wait, 2: Dive, 3: Return
+    _actor_object.vfx_timer = 0; 
+    
+    // Store target position for the dive attack
+    _actor_object.vfx_target_x = _target.x;
+    _actor_object.vfx_target_y = _target.y;
 }

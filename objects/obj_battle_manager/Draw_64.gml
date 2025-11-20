@@ -243,10 +243,12 @@ else
              var _h = sprite_get_height(_actor.sprite_index) * _actor.my_scale;
              var _w = sprite_get_width(_actor.sprite_index) * _actor.my_scale;
              
+             // Draw semi-transparent Aqua background
              draw_set_color(c_aqua);
              draw_set_alpha(0.4);
              draw_roundrect(_actor.x - _w/2 - 10, _actor.y - _h - 10, _actor.x + _w/2 + 10, _actor.y + 10, false);
              
+             // Draw White border
              draw_set_alpha(1.0);
              draw_set_color(c_white);
              draw_roundrect(_actor.x - _w/2 - 10, _actor.y - _h - 10, _actor.x + _w/2 + 10, _actor.y + 10, true);
@@ -281,6 +283,7 @@ else
                 var _py = _actor.y - _y_offset + _p.y;
                 
                 draw_set_color(c_fuchsia);
+                // Draw heart shape using two circles and a triangle
                 var _s = _p.scale * 10;
                 draw_circle(_px - _s/2, _py, _s/2, false);
                 draw_circle(_px + _s/2, _py, _s/2, false);
@@ -309,6 +312,7 @@ else
             
             draw_set_color(c_fuchsia);
             draw_set_alpha(0.6);
+            // Draw a "motion blur" arc
             draw_ellipse(_px - 30, _py - 10, _px + 30, _py + 10, false);
             draw_set_alpha(1.0);
             draw_set_color(c_white);

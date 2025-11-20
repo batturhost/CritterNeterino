@@ -40,6 +40,11 @@ preview_anim_speed = 0.1;
 feedback_message = "";
 feedback_message_timer = 0;
 
+// ================== NEW: PC BOX ANIMATION VARS ==================
+pc_anim_frame = 0;
+pc_anim_speed = 0.1; // Adjust speed as needed
+// ================================================================
+
 // 5. Drag/Drop Vars (FIXED: MATCHING STEP EVENT NAMES)
 drag_critter_index = -1;
 drag_critter_data = noone;

@@ -54,11 +54,11 @@ draw_set_color(c_black);
 
 var _to_team_state = (pc_selected_index != -1 && array_length(global.PlayerData.team) < 6) ? "raised" : "sunken";
 draw_rectangle_95(btn_to_team_x1, btn_to_team_y1, btn_to_team_x2, btn_to_team_y2, _to_team_state);
-draw_text(btn_to_team_x1 + 75, btn_to_team_y1 + 14, "<-- Add");
+draw_text(btn_to_team_x1 + 75, btn_to_team_y1 + 14, "<- Add"); 
 
 var _to_pc_state = (team_selected_index != -1 && array_length(global.PlayerData.team) > 1) ? "raised" : "sunken";
 draw_rectangle_95(btn_to_pc_x1, btn_to_pc_y1, btn_to_pc_x2, btn_to_pc_y2, _to_pc_state);
-draw_text(btn_to_pc_x1 + 75, btn_to_pc_y1 + 14, "Move -->");
+draw_text(btn_to_pc_x1 + 75, btn_to_pc_y1 + 14, "-> Store"); 
 
 // --- 6. Draw Team List (Left) - SEMI-TRANSPARENT ---
 draw_set_alpha(0.8); 
@@ -128,13 +128,10 @@ for (var i = pc_scroll_top; i < _max_rows; i++) {
         var _cell_x1 = pc_list_x1 + pc_grid_padding + (j * (pc_grid_cell_size + pc_grid_padding));
         var _cell_y1 = _row_y_pos;
         
-        // --- MODIFIED SELECTION DRAWING ---
-        // Only draw the "sunken" box if this item is SELECTED.
-        // Otherwise, draw nothing behind the sprite.
+        // Only draw "sunken" box if selected
         if (_index == pc_selected_index) {
              draw_rectangle_95(_cell_x1, _cell_y1, _cell_x1 + pc_grid_cell_size, _cell_y1 + pc_grid_cell_size, "sunken");
         }
-        // ----------------------------------
         
         var _critter = global.PlayerData.pc_box[_index];
         var _sprite = _critter.sprite_idle;
@@ -145,8 +142,10 @@ for (var i = pc_scroll_top; i < _max_rows; i++) {
         var _cell_center_y = _cell_y1 + (pc_grid_cell_size / 2);
         var _draw_y = _cell_center_y + ((_sprite_h / 2) * _scale);
         
-        // Draw sprite
-        draw_sprite_ext(_sprite, 0, _cell_center_x, _draw_y, _scale, _scale, 0, c_white, 1);
+        // ================== ANIMATION FIX ==================
+        var _frame = pc_anim_frame % sprite_get_number(_sprite);
+        draw_sprite_ext(_sprite, _frame, _cell_center_x, _draw_y, _scale, _scale, 0, c_white, 1);
+        // ===================================================
     }
 }
 gpu_set_scissor(0, 0, display_get_gui_width(), display_get_gui_height());
@@ -165,8 +164,16 @@ if (preview_critter != noone) {
     var _frame_x2 = _frame_x1 + _frame_w;
     var _frame_y2 = _frame_y1 + _frame_h;
     
-    // Draw Frame
-    draw_rectangle_95(_frame_x1, _frame_y1, _frame_x2, _frame_y2, "sunken");
+    // --- UPDATED: Draw Frame with Dark Teal Background ---
+    var _col_dark_teal = make_color_rgb(0, 60, 60); // Bestiary Color
+    
+    draw_set_alpha(0.8);
+    draw_set_color(_col_dark_teal);
+    draw_rectangle(_frame_x1, _frame_y1, _frame_x2, _frame_y2, false);
+    draw_set_alpha(1.0);
+    
+    draw_border_95(_frame_x1, _frame_y1, _frame_x2, _frame_y2, "sunken");
+    // -----------------------------------------------------
     
     var _sprite = preview_critter.sprite_idle;
     var _sprite_w = sprite_get_width(_sprite);
@@ -234,7 +241,6 @@ if (is_dragging_critter) {
     draw_set_halign(fa_right);
     draw_text(_draw_x + team_list_w - 5, _draw_y + 2, _level);
 }
-
 
 // --- 11. Outer Border (Last) ---
 draw_border_95(window_x1, window_y1, window_x2, window_y2, "raised");
