@@ -22,57 +22,92 @@ draw_scanlines_95(_inner_x, _inner_y, _inner_x + _inner_w, _inner_y + _inner_h);
 // --- CHECK FOR DOWNLOAD STATE ---
 if (current_state == BATTLE_STATE.WIN_DOWNLOAD_PROGRESS || current_state == BATTLE_STATE.WIN_DOWNLOAD_COMPLETE)
 {
-    // Draw Download UI *Centered* in the window
-    var _center_x = window_x1 + (window_width / 2);
-    var _center_y = window_y1 + (window_height / 2);
+    // === DRAW MODAL POPUP WINDOW ===
+    // Dimensions match obj_critter_confirm_manager (440x400)
+    var _pop_w = 440;
+    var _pop_h = 400;
+    var _pop_x1 = window_x1 + (window_width - _pop_w) / 2;
+    var _pop_y1 = window_y1 + (window_height - _pop_h) / 2;
+    var _pop_x2 = _pop_x1 + _pop_w;
+    var _pop_y2 = _pop_y1 + _pop_h;
     
+    // 1. Draw Window Frame
+    draw_rectangle_95(_pop_x1, _pop_y1, _pop_x2, _pop_y2, "raised");
+    
+    // 2. Draw Title Bar
+    draw_set_color(c_navy);
+    draw_rectangle(_pop_x1 + 2, _pop_y1 + 2, _pop_x2 - 2, _pop_y1 + 32, false); 
+    draw_set_color(c_white);
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_middle);
+    draw_text(_pop_x1 + 10, _pop_y1 + 17, "File Acquisition");
+    
+    // 3. Draw Content
     draw_set_halign(fa_center);
-    draw_set_valign(fa_top);
     draw_set_color(c_black);
     
     if (current_state == BATTLE_STATE.WIN_DOWNLOAD_PROGRESS) {
-        draw_text(_center_x, _center_y - 100, "Downloading Critter-File...");
-        draw_text(_center_x, _center_y - 80, download_filename);
+        // -- DOWNLOADING STATE --
+        draw_set_valign(fa_top);
+        draw_text(_pop_x1 + (_pop_w/2), _pop_y1 + 80, "Downloading Critter-File...");
+        draw_text(_pop_x1 + (_pop_w/2), _pop_y1 + 105, download_filename);
         
-        // Progress Bar
-        var _bar_x1 = _center_x - (download_bar_w / 2);
-        var _bar_y1 = _center_y;
-        var _bar_x2 = _bar_x1 + download_bar_w;
-        var _bar_y2 = _bar_y1 + download_bar_h;
+        // Progress Bar Logic
+        var _bar_w = 300; 
+        var _bar_h = 30;
+        var _bar_x1 = _pop_x1 + (_pop_w / 2) - (_bar_w / 2);
+        var _bar_y1 = _pop_y1 + (_pop_h / 2);
+        var _bar_x2 = _bar_x1 + _bar_w;
+        var _bar_y2 = _bar_y1 + _bar_h;
         
         draw_rectangle_95(_bar_x1, _bar_y1, _bar_x2, _bar_y2, "sunken");
-        var _fill_width = (download_bar_w - 4) * (download_current_percent / 100);
         
+        var _fill_width = (_bar_w - 4) * (download_current_percent / 100);
         if (_fill_width > 0) {
             draw_set_color(c_navy);
             draw_rectangle(_bar_x1 + 2, _bar_y1 + 2, _bar_x1 + 2 + _fill_width, _bar_y2 - 2, false);
         }
         
         draw_set_color(c_white);
+        draw_set_halign(fa_center);
         draw_set_valign(fa_middle);
-        draw_text(_bar_x1 + (download_bar_w / 2), _bar_y1 + (download_bar_h / 2) + 2, string(floor(download_current_percent)) + "%");
+        draw_text(_bar_x1 + (_bar_w/2), _bar_y1 + (_bar_h/2) + 2, string(floor(download_current_percent)) + "%");
+        
         draw_set_valign(fa_top);
         draw_set_color(c_black);
-        draw_text(_center_x, _bar_y2 + 20, "[Connecting...]");
+        draw_text(_pop_x1 + (_pop_w/2), _pop_y2 - 40, "[Connecting...]");
         
     } else {
-        // Complete
-        draw_text(_center_x, _center_y - 120, "Download Complete! Critter Acquired!");
+        // -- COMPLETE STATE --
+        draw_set_valign(fa_top);
+        draw_text(_pop_x1 + (_pop_w/2), _pop_y1 + 60, "Critter-File Download Complete!");
         
-        var _sprite_w = sprite_get_width(download_sprite);
-        var _sprite_h = sprite_get_height(download_sprite);
-        var _scale = min(250 / _sprite_w, 200 / _sprite_h);
+        // Sprite Box
+        var _center_x = _pop_x1 + (_pop_w/2);
+        var _visual_center_y = _pop_y1 + 175;
+        var _max_w = 200; var _max_h = 130;
         
-        draw_sprite_ext(download_sprite, 0, _center_x, _center_y + 20, _scale, _scale, 0, c_white, 1);
+        // Draw "Sunken" Frame for sprite
+        var _box_w = 250; var _box_h = 200; // Approximate box size around sprite
+        draw_rectangle_95(_center_x - _box_w/2, _visual_center_y - _box_h/2, _center_x + _box_w/2, _visual_center_y + _box_h/2, "sunken");
         
-        draw_text(_center_x, _center_y + 140, "You acquired data for:");
+        var _spr_w = sprite_get_width(download_sprite);
+        var _spr_h = sprite_get_height(download_sprite);
+        var _fit_scale = min(_max_w / _spr_w, _max_h / _spr_h);
+        
+        // Draw Sprite
+        draw_sprite_ext(download_sprite, 0, _center_x, _visual_center_y, _fit_scale, _fit_scale, 0, c_white, 1);
+        
+        draw_color = c_black;
+        draw_text(_pop_x1 + (_pop_w/2), _pop_y2 - 120, "You acquired data for:");
+        
         draw_set_color(c_yellow);
-        draw_text(_center_x, _center_y + 160, enemy_critter_data.animal_name);
+        draw_text(_pop_x1 + (_pop_w/2), _pop_y2 - 95, enemy_critter_data.animal_name);
     }
 }
 else 
 {
-    // --- STANDARD BATTLE DRAWING ---
+    // --- STANDARD BATTLE DRAWING (Unchanged) ---
     
     // 3. Draw Actors
     var sprite_y_offset = -25;
