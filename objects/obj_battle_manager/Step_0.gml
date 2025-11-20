@@ -26,7 +26,8 @@ if (is_dragging) {
     info_enemy_x2 = info_enemy_x1 + info_box_width; info_enemy_y2 = info_enemy_y1 + info_box_height;
     info_player_x1 = window_x2 - info_box_width - 20; info_player_y1 = _log_y1 - info_box_height - 10; 
     info_player_x2 = info_player_x1 + info_box_width; info_player_y2 = info_player_y1 + info_box_height;
-
+    
+    // Re-calc buttons
     var _btn_w = 175; var _btn_h = 30; var _btn_gutter = 10;
     var _btn_base_x = window_x2 - (_btn_w * 2) - (_btn_gutter * 2);
     var _btn_base_y = _log_y1 + 15;
@@ -36,16 +37,37 @@ if (is_dragging) {
         [_btn_base_x, _btn_base_y + _btn_h + _btn_gutter, _btn_base_x + _btn_w, _btn_base_y + _btn_h * 2 + _btn_gutter, "ITEM"],
         [_btn_base_x + _btn_w + _btn_gutter, _btn_base_y + _btn_h + _btn_gutter, _btn_base_x + _btn_w * 2 + _btn_gutter, _btn_base_y + _btn_h * 2 + _btn_gutter, "RUN"]];
 
-    btn_move_menu = [[_btn_base_x, _btn_base_y, _btn_base_x + _btn_w, _btn_base_y + _btn_h, player_critter_data.moves[0].move_name],
-        [_btn_base_x + _btn_w + _btn_gutter, _btn_base_y, _btn_base_x + _btn_w * 2 + _btn_gutter, _btn_base_y + _btn_h, player_critter_data.moves[1].move_name], 
-        [_btn_base_x, _btn_base_y + _btn_h + _btn_gutter, _btn_base_x + _btn_w, _btn_base_y + _btn_h * 2 + _btn_gutter, player_critter_data.moves[2].move_name],
-        [_btn_base_x + _btn_w + _btn_gutter, _btn_base_y + _btn_h + _btn_gutter, _btn_base_x + _btn_w * 2 + _btn_gutter, _btn_base_y + _btn_h * 2 + _btn_gutter, "BACK"]];
-
     btn_team_layout = [];
     var _team_btn_w = 400; var _team_btn_h = 100; var _team_box_padding = 10; var _team_box_x_start = window_x1 + 40; var _team_box_y_start = window_y1 + 40;
     for (var i = 0; i < 3; i++) { for (var j = 0; j < 2; j++) { var _x1 = _team_box_x_start + (j * (_team_btn_w + _team_box_padding)); var _y1 = _team_box_y_start + (i * (_team_btn_h + _team_box_padding)); array_push(btn_team_layout, [_x1, _y1, _x1 + _team_btn_w, _y1 + _team_btn_h]); } }
     var _cancel_x = window_x2 - 120 - 20; var _cancel_y = window_y2 - 40 - 20; array_push(btn_team_layout, [_cancel_x, _cancel_y, _cancel_x + 120, _cancel_y + 40]);
     download_bar_x1 = window_x1 + (window_width / 2) - (download_bar_w / 2); download_bar_y1 = window_y1 + (window_height / 2);
+}
+
+// === REFRESH BUTTONS (Needed for moves updating) ===
+var _btn_w = 175; var _btn_h = 30; var _btn_gutter = 10;
+var _log_y1 = window_y1 + (window_height * 0.8);
+var _btn_base_x = window_x2 - (_btn_w * 2) - (_btn_gutter * 2);
+var _btn_base_y = _log_y1 + 15;
+
+// We rebuild this every step to ensure if moves change, buttons update
+if (current_state == BATTLE_STATE.PLAYER_TURN && current_menu == MENU.FIGHT) {
+    btn_move_menu = [];
+    for(var i=0; i<array_length(player_critter_data.moves); i++) {
+         // Button pos logic
+         var _col = i % 2;
+         var _row = floor(i / 2);
+         var _bx1 = _btn_base_x + (_col * (_btn_w + _btn_gutter));
+         var _by1 = _btn_base_y + (_row * (_btn_h + _btn_gutter));
+         array_push(btn_move_menu, [_bx1, _by1, _bx1 + _btn_w, _by1 + _btn_h, player_critter_data.moves[i].move_name]);
+    }
+    // Add Back Button at slot 4 (or end of list)
+    var _back_bx1 = _btn_base_x + (1 * (_btn_w + _btn_gutter));
+    var _back_by1 = _btn_base_y + (1 * (_btn_h + _btn_gutter));
+    // If we have 4 moves, back button overlays or we need UI adjustment. 
+    // For now assume max 4 moves, so index 3 is the last slot.
+    // Hardcoded BACK button at bottom right for safety:
+    btn_move_menu[3] = [_back_bx1, _back_by1, _back_bx1 + _btn_w, _back_by1 + _btn_h, "BACK"];
 }
 
 
@@ -92,13 +114,37 @@ switch (current_state) {
                     }
                 }
                 break;
+                
             case MENU.FIGHT:
-                for (var i = 0; i < 4; i++) { var _btn = btn_move_menu[i]; if (point_in_box(_mx, _my, _btn[0], _btn[1], _btn[2], _btn[3])) { menu_focus = i; if (_click) _key_enter = true; } }
+                // Check hovers & clicks
+                for (var i = 0; i < 4; i++) { 
+                    if (i >= array_length(btn_move_menu)) break;
+                    var _btn = btn_move_menu[i]; 
+                    if (point_in_box(_mx, _my, _btn[0], _btn[1], _btn[2], _btn[3])) { 
+                        menu_focus = i; 
+                        if (_click) _key_enter = true; 
+                    } 
+                }
+                
                 if (_key_enter) {
-                    if (menu_focus < 3) { player_chosen_move = player_critter_data.moves[menu_focus]; current_state = BATTLE_STATE.PLAYER_MOVE_RUN; current_menu = MENU.MAIN; menu_focus = 0; }
-                    else { current_menu = MENU.MAIN; menu_focus = 0; }
+                    if (menu_focus == 3) { // BACK button
+                        current_menu = MENU.MAIN; 
+                        menu_focus = 0; 
+                    }
+                    else if (menu_focus < array_length(player_critter_data.moves)) {
+                        // CHECK PP
+                        if (player_critter_data.move_pp[menu_focus] > 0) {
+                            player_chosen_move_index = menu_focus; 
+                            current_state = BATTLE_STATE.PLAYER_MOVE_RUN; 
+                            current_menu = MENU.MAIN; 
+                            menu_focus = 0;
+                        } else {
+                            battle_log_text = "No PP left for this move!";
+                        }
+                    }
                 }
                 break;
+                
             case MENU.TEAM:
                 var _team_size = array_length(global.PlayerData.team);
                 for (var i = 0; i < _team_size; i++) { var _btn = btn_team_layout[i]; if (point_in_box(_mx, _my, _btn[0], _btn[1], _btn[2], _btn[3])) { menu_focus = i; if (_click) _key_enter = true; } }
@@ -119,18 +165,33 @@ switch (current_state) {
         break;
         
     case BATTLE_STATE.PLAYER_MOVE_RUN: 
-        // === USE SHARED LOGIC ===
-        perform_turn_logic(player_actor, enemy_actor, player_critter_data, enemy_critter_data, player_chosen_move);
+        perform_turn_logic(player_actor, enemy_actor, player_critter_data, enemy_critter_data, player_chosen_move_index);
         alarm[0] = 120; current_state = BATTLE_STATE.WAIT_FOR_PLAYER_MOVE; 
         break;
         
     case BATTLE_STATE.ENEMY_TURN:
-        var _move_index = irandom_range(0, array_length(enemy_critter_data.moves) - 1); enemy_chosen_move = enemy_critter_data.moves[_move_index];
-        current_state = BATTLE_STATE.ENEMY_MOVE_RUN; break;
+        // Logic: Pick a move that has PP
+        var _valid_moves = [];
+        for (var m = 0; m < array_length(enemy_critter_data.moves); m++) {
+            if (enemy_critter_data.move_pp[m] > 0) {
+                array_push(_valid_moves, m);
+            }
+        }
+        
+        if (array_length(_valid_moves) > 0) {
+            var _pick = irandom(array_length(_valid_moves) - 1);
+            enemy_chosen_move_index = _valid_moves[_pick];
+            current_state = BATTLE_STATE.ENEMY_MOVE_RUN; 
+        } else {
+            // Struggle? For now just skip turn or heal a tiny bit (Struggle logic can be complex)
+            battle_log_text = enemy_critter_data.nickname + " has no moves left!";
+            current_state = BATTLE_STATE.WAIT_FOR_ENEMY_MOVE; // Skip
+            alarm[0] = 60;
+        }
+        break;
         
     case BATTLE_STATE.ENEMY_MOVE_RUN:
-        // === USE SHARED LOGIC ===
-        perform_turn_logic(enemy_actor, player_actor, enemy_critter_data, player_critter_data, enemy_chosen_move);
+        perform_turn_logic(enemy_actor, player_actor, enemy_critter_data, player_critter_data, enemy_chosen_move_index);
         alarm[0] = 120; current_state = BATTLE_STATE.WAIT_FOR_ENEMY_MOVE; 
         break;
         

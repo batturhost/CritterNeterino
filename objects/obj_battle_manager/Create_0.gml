@@ -58,8 +58,6 @@ var _enemy_key = current_opponent_data.critter_keys[0];
 var _enemy_level = current_opponent_data.critter_levels[0];
 var _enemy_db = global.bestiary[$ _enemy_key];
 
-// === CRITICAL FIX: ENSURE ARGUMENT ORDER MATCHES CONSTRUCTOR ===
-// AnimalData(_name, _hp, _atk, _def, _spd, _lvl, _spr_idle, _spr_back, _spr_move, _moves, _blurb, _size, _type)
 enemy_critter_data = new AnimalData(
     _enemy_db.animal_name, 
     _enemy_db.base_hp, 
@@ -73,7 +71,7 @@ enemy_critter_data = new AnimalData(
     _enemy_db.moves, 
     _enemy_db.blurb, 
     _enemy_db.size,
-    _enemy_db.element_type // <--- This was the likely missing/misaligned arg
+    _enemy_db.element_type 
 );
 enemy_critter_data.nickname = _enemy_db.animal_name; 
 
@@ -102,9 +100,8 @@ if (player_critter_data.animal_name == "Capybara" || player_critter_data.animal_
 
 // 6. Misc setup
 battle_log_text = "The battle begins!";
-player_chosen_move = noone; 
-player_chosen_move_index = -1; 
-enemy_chosen_move = noone; 
+player_chosen_move_index = -1; // Changed to Index
+enemy_chosen_move_index = -1;  // Changed to Index
 is_force_swapping = false; 
 btn_main_menu = []; btn_move_menu = []; btn_team_layout = [];
 download_start_percent = 0; download_end_percent = 0; download_current_percent = 0;
@@ -131,12 +128,8 @@ btn_main_menu = [
     [_btn_base_x + _btn_w + _btn_gutter, _btn_base_y + _btn_h + _btn_gutter, _btn_base_x + _btn_w * 2 + _btn_gutter, _btn_base_y + _btn_h * 2 + _btn_gutter, "RUN"]
 ];
 
-btn_move_menu = [
-    [_btn_base_x, _btn_base_y, _btn_base_x + _btn_w, _btn_base_y + _btn_h, player_critter_data.moves[0].move_name],
-    [_btn_base_x + _btn_w + _btn_gutter, _btn_base_y, _btn_base_x + _btn_w * 2 + _btn_gutter, _btn_base_y + _btn_h, player_critter_data.moves[1].move_name], 
-    [_btn_base_x, _btn_base_y + _btn_h + _btn_gutter, _btn_base_x + _btn_w, _btn_base_y + _btn_h * 2 + _btn_gutter, player_critter_data.moves[2].move_name],
-    [_btn_base_x + _btn_w + _btn_gutter, _btn_base_y + _btn_h + _btn_gutter, _btn_base_x + _btn_w * 2 + _btn_gutter, _btn_base_y + _btn_h * 2 + _btn_gutter, "BACK"]
-];
+// Move Menu logic is updated dynamically in Step, but init here
+btn_move_menu = [];
 
 // Initialize Team Layout
 btn_team_layout = [];
@@ -156,9 +149,17 @@ download_bar_y1 = window_y1 + (window_height / 2);
 
 
 // ============================================================================
-//   CORE BATTLE LOGIC FUNCTION (REUSED)
+//   CORE BATTLE LOGIC FUNCTION (UPDATED TO USE INDEX FOR PP)
 // ============================================================================
-perform_turn_logic = function(_user_actor, _target_actor, _user_data, _target_data, _move) {
+perform_turn_logic = function(_user_actor, _target_actor, _user_data, _target_data, _move_index) {
+    
+    // 1. Get the move object
+    var _move = _user_data.moves[_move_index];
+    
+    // 2. Decrement PP
+    if (_user_data.move_pp[_move_index] > 0) {
+        _user_data.move_pp[_move_index]--;
+    }
     
     battle_log_text = _user_data.nickname + " used " + _move.move_name + "!";
     

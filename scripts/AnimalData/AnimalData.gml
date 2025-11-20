@@ -38,6 +38,15 @@ function AnimalData(_name, _hp, _atk, _def, _spd, _lvl, _spr_idle, _spr_back, _s
     // Metadata
     nickname = _name;
     gender = 0; // 0: M, 1: F
+    
+    // ================== NEW: PP TRACKING ==================
+    // Create an array to track current PP for each move
+    // Default to max_pp when created
+    move_pp = array_create(array_length(moves), 0);
+    for (var i = 0; i < array_length(moves); i++) {
+        move_pp[i] = moves[i].max_pp;
+    }
+    // ======================================================
 }
 
 function recalculate_stats(_animal) {

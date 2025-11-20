@@ -330,15 +330,12 @@ else
             }
             draw_set_color(c_white);
         }
-
-        // --- NEW: BAMBOO (Green Rectangles) ---
         else if (_actor.vfx_type == "bamboo") {
             draw_set_color(c_lime);
             for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
                 var _p = _actor.vfx_particles[i];
                 var _px = _actor.x + _p.x;
                 var _py = _actor.y - _y_offset + _p.y;
-                // Draw rotating green stick
                 var _len = 20;
                 var _dx = lengthdir_x(_len, _p.angle);
                 var _dy = lengthdir_y(_len, _p.angle);
@@ -346,8 +343,6 @@ else
             }
             draw_set_color(c_white);
         }
-
-        // --- NEW: LAZY (Blue Zs) ---
         else if (_actor.vfx_type == "lazy") {
             draw_set_font(fnt_vga_bold);
             draw_set_color(c_blue);
@@ -362,8 +357,6 @@ else
         }
     };
 
-    // ================== ORDER SWAP: DRAW ENEMY FIRST, THEN PLAYER ==================
-
     // --- ENEMY (Draws First = Background Layer) ---
     if (instance_exists(enemy_actor)) {
         var _e_sprite = enemy_actor.sprite_index;
@@ -372,30 +365,24 @@ else
         var _e_frame = enemy_actor.animation_frame; var _e_alpha = enemy_actor.faint_alpha;
         var _e_y_scale = enemy_actor.faint_scale_y;
         
-        // --- WITHDRAW FADE LOGIC ---
-        if (enemy_actor.vfx_type == "shield") _e_alpha *= 0.2; // Fade out
+        if (enemy_actor.vfx_type == "shield") _e_alpha *= 0.2; 
         
-        // Shadow
         draw_set_color(c_black); draw_set_alpha(0.3 * _e_alpha);
         var _shadow_w = sprite_get_width(_e_sprite) * _e_scale * 0.5; var _shadow_h = _shadow_w * 0.3;
         draw_ellipse(_e_x - _shadow_w, _e_y - _shadow_h, _e_x + _shadow_w, _e_y + _shadow_h, false);
         draw_set_alpha(1.0);
 
-        // Glitch Effect
         if (enemy_critter_data.glitch_timer > 0) {
             var _shake_x = random_range(-2, 2);
             draw_sprite_ext(_e_sprite, _e_frame, _e_x - 3 + _shake_x, _e_y - sprite_y_offset, _e_scale, _e_scale * _e_y_scale, 0, c_red, 0.5);
             draw_sprite_ext(_e_sprite, _e_frame, _e_x + 3 + _shake_x, _e_y - sprite_y_offset, _e_scale, _e_scale * _e_y_scale, 0, c_aqua, 0.5);
             draw_sprite_ext(_e_sprite, _e_frame, _e_x + _shake_x, _e_y - sprite_y_offset, _e_scale, _e_scale * _e_y_scale, 0, c_white, _e_alpha);
         } else {
-            // ================== ROLL ROTATION LOGIC ==================
             var _rot = 0;
             if (enemy_actor.vfx_type == "roll") _rot = enemy_actor.vfx_timer * 20;
             draw_sprite_ext(_e_sprite, _e_frame, _e_x, _e_y - sprite_y_offset, _e_scale, _e_scale * _e_y_scale, _rot, c_white, _e_alpha);
-            // =========================================================
         }
 
-        // Draw VFX
         draw_critter_vfx(enemy_actor, sprite_y_offset);
 
         gpu_set_blendmode(bm_add);
@@ -411,16 +398,13 @@ else
         var _p_frame = player_actor.animation_frame; var _p_alpha = player_actor.faint_alpha;
         var _p_y_scale = player_actor.faint_scale_y;
         
-        // --- WITHDRAW FADE LOGIC ---
-        if (player_actor.vfx_type == "shield") _p_alpha *= 0.2; // Fade out
+        if (player_actor.vfx_type == "shield") _p_alpha *= 0.2; 
         
-        // Shadow
         draw_set_color(c_black); draw_set_alpha(0.3 * _p_alpha);
         var _shadow_w = sprite_get_width(_p_sprite) * _p_scale * 0.5; var _shadow_h = _shadow_w * 0.3;
         draw_ellipse(_p_x - _shadow_w, _p_y - _shadow_h, _p_x + _shadow_w, _p_y + _shadow_h, false);
         draw_set_alpha(1.0);
 
-        // Glitch Effect
         if (player_critter_data.glitch_timer > 0) {
             var _shake_x = random_range(-2, 2);
             var _shake_y = random_range(-2, 2);
@@ -428,24 +412,18 @@ else
             draw_sprite_ext(_p_sprite, _p_frame, _p_x + 3 + _shake_x, _p_y - sprite_y_offset + _shake_y, _p_scale, _p_scale * _p_y_scale, 0, c_aqua, 0.5);
             draw_sprite_ext(_p_sprite, _p_frame, _p_x + _shake_x, _p_y - sprite_y_offset + _shake_y, _p_scale, _p_scale * _p_y_scale, 0, c_white, _p_alpha);
         } else {
-            // ================== ROLL ROTATION LOGIC ==================
             var _rot = 0;
-            if (player_actor.vfx_type == "roll") _rot = player_actor.vfx_timer * -20; // Rotate other way for player
+            if (player_actor.vfx_type == "roll") _rot = player_actor.vfx_timer * -20; 
             draw_sprite_ext(_p_sprite, _p_frame, _p_x, _p_y - sprite_y_offset, _p_scale, _p_scale * _p_y_scale, _rot, c_white, _p_alpha);
-            // =========================================================
         }
 
-        // Draw VFX
         draw_critter_vfx(player_actor, sprite_y_offset);
 
-        // Heal Flash
         gpu_set_blendmode(bm_add);
         draw_sprite_ext(_p_sprite, _p_frame, _p_x, _p_y - sprite_y_offset, _p_scale, _p_scale * _p_y_scale, 0, player_actor.flash_color, player_actor.flash_alpha * _p_alpha);
         gpu_set_blendmode(bm_normal);
     }
     
-    // ===========================================================================
-
     // --- 4. Draw Battle Log Box ---
     var _log_y1 = window_y1 + (window_height * 0.8);
     var _log_y2 = window_y2 - 5;
@@ -510,24 +488,88 @@ else
                     var _state = (menu_focus == i) ? "sunken" : "raised"; 
                     draw_rectangle_95(_btn[0], _btn[1], _btn[2], _btn[3], _state); 
                     draw_set_color(c_black);
-                    // ================== FIXED CENTERING ==================
                     var _btn_w = _btn[2] - _btn[0];
                     var _btn_h = _btn[3] - _btn[1];
                     draw_text(_btn[0] + (_btn_w / 2), _btn[1] + (_btn_h / 2), _btn[4]);
                 }
                 break;
             case MENU.FIGHT:
-                for (var i = 0; i < 4; i++) { 
+                for (var i = 0; i < array_length(btn_move_menu); i++) { 
                     var _btn = btn_move_menu[i];
                     var _state = (menu_focus == i) ? "sunken" : "raised"; 
                     draw_rectangle_95(_btn[0], _btn[1], _btn[2], _btn[3], _state); 
                     draw_set_color(c_black);
-                    // ================== FIXED CENTERING ==================
+                    
+                    // Grey out moves with 0 PP
+                    if (i < array_length(player_critter_data.moves) && i != 3) { // 3 is Back
+                         if (player_critter_data.move_pp[i] <= 0) {
+                             draw_set_color(c_gray);
+                         }
+                    }
+                    
                     var _btn_w = _btn[2] - _btn[0];
                     var _btn_h = _btn[3] - _btn[1];
                     draw_text(_btn[0] + (_btn_w / 2), _btn[1] + (_btn_h / 2), _btn[4]);
                 }
+                
+                // ================== NEW: DRAW PP INFO BOX ==================
+                // Only if hovering a valid move (0-2) and not "Back" (3)
+                if (menu_focus >= 0 && menu_focus < array_length(player_critter_data.moves) && menu_focus != 3) {
+                    var _focused_move = player_critter_data.moves[menu_focus];
+                    var _current_pp = player_critter_data.move_pp[menu_focus];
+                    var _max_pp = _focused_move.max_pp;
+                    
+                    // Box Position (To the left of buttons)
+                    var _btn_area_x = window_x2 - (175 * 2) - 20; // Approximate btn_base_x
+                    var _info_w = 250;
+                    var _info_h = 80;
+                    var _info_x2 = _btn_area_x - 20;
+                    var _info_x1 = _info_x2 - _info_w;
+                    var _info_y1 = _log_y1 + 15; // Align top with buttons
+                    var _info_y2 = _info_y1 + _info_h;
+                    
+                    // Draw Box
+                    draw_set_color(c_white);
+                    draw_rectangle(_info_x1, _info_y1, _info_x2, _info_y2, false);
+                    draw_border_95(_info_x1, _info_y1, _info_x2, _info_y2, "raised");
+                    
+                    // Draw Content
+                    draw_set_color(c_black);
+                    draw_set_halign(fa_left);
+                    draw_set_valign(fa_top);
+                    
+                    // Line 1: Type
+                    var _type_col = c_black;
+                    if (_focused_move.element == "HYDRO") _type_col = c_blue;
+                    if (_focused_move.element == "NATURE") _type_col = c_green;
+                    if (_focused_move.element == "TOXIC") _type_col = c_purple;
+                    if (_focused_move.element == "AERO") _type_col = c_aqua;
+                    if (_focused_move.element == "BEAST") _type_col = make_color_rgb(150, 75, 0); // Brown
+                    
+                    draw_set_color(_type_col);
+                    draw_set_font(fnt_vga_bold);
+                    draw_text(_info_x1 + 10, _info_y1 + 8, _focused_move.element);
+                    
+                    // Line 1: PP (Right aligned)
+                    draw_set_halign(fa_right);
+                    draw_set_color(c_black);
+                    draw_text(_info_x2 - 10, _info_y1 + 8, "PP: " + string(_current_pp) + "/" + string(_max_pp));
+                    
+                    // Line 2: Category
+                    draw_set_halign(fa_left);
+                    draw_set_font(fnt_vga);
+                    var _cat = "Physical";
+                    if (_focused_move.move_type == MOVE_TYPE.HEAL) _cat = "Status";
+                    if (_focused_move.move_type == MOVE_TYPE.STAT_BUFF) _cat = "Status";
+                    if (_focused_move.move_type == MOVE_TYPE.STAT_DEBUFF) _cat = "Status";
+                    draw_text(_info_x1 + 10, _info_y1 + 28, "Type: " + _cat);
+                    
+                    // Line 3: Description
+                    draw_text_ext(_info_x1 + 10, _info_y1 + 48, _focused_move.description, 16, _info_w - 20);
+                }
+                // ===========================================================
                 break;
+                
             case MENU.TEAM:
                 // --- TEAM MENU DRAW ---
                 draw_rectangle_95(window_x1 + 5, _log_y1, window_x2 - 5, window_y2 - 5, "raised");
@@ -577,7 +619,6 @@ else
                 draw_set_color(c_black);
                 draw_set_halign(fa_center);
                 draw_set_valign(fa_middle);
-                // ================== FIXED CENTERING (CANCEL BUTTON) ==================
                 var _cancel_w = _cancel_btn[2] - _cancel_btn[0];
                 var _cancel_h = _cancel_btn[3] - _cancel_btn[1];
                 draw_text(_cancel_btn[0] + (_cancel_w / 2), _cancel_btn[1] + (_cancel_h / 2), "CANCEL");
