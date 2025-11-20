@@ -1,6 +1,6 @@
 // --- Create Event ---
 
-// --- 1. Get Battle Type ---
+// 1. Get Battle Type
 current_level_cap = level_cap;
 if (is_casual == false) {
     current_opponent_data = opponent_data; 
@@ -23,15 +23,11 @@ if (is_casual == false) {
     };
 }
 
-// 2. Define the Battle States
+// 2. Define States
 enum BATTLE_STATE {
     START, WAIT_FOR_START, PLAYER_TURN, PLAYER_MOVE_RUN,
     WAIT_FOR_PLAYER_MOVE, ENEMY_TURN, ENEMY_MOVE_RUN, WAIT_FOR_ENEMY_MOVE,
-    
-    // --- NEW PASSIVE DAMAGE STATES ---
-    PLAYER_POST_TURN_DAMAGE, // For "Glitched" passive damage
-    ENEMY_POST_TURN_DAMAGE,  //
-    
+    PLAYER_POST_TURN_DAMAGE, ENEMY_POST_TURN_DAMAGE,
     PLAYER_FAINT, ENEMY_FAINT, WAIT_FOR_FAINT,
     PLAYER_SWAP_OUT, PLAYER_SWAP_IN,
     WIN_DOWNLOAD_PROGRESS, WIN_DOWNLOAD_COMPLETE,
@@ -39,33 +35,25 @@ enum BATTLE_STATE {
     WIN_END, LOSE
 }
 current_state = BATTLE_STATE.START;
-// 3. Define the Player's Menu States
+
+// 3. Menu States
 enum MENU { MAIN, FIGHT, TEAM }
 current_menu = MENU.MAIN;
 menu_focus = 0;
-// 4. Define the 4:3 "Browser Window"
-window_width = 960;
-window_height = 720;
+
+// 4. Window Layout
+window_width = 960; window_height = 720;
 window_x1 = (display_get_gui_width() / 2) - (window_width / 2);
 window_y1 = (display_get_gui_height() / 2) - (window_height / 2);
 window_x2 = window_x1 + window_width;
 window_y2 = window_y1 + window_height;
+is_dragging = false; drag_dx = 0; drag_dy = 0; 
 
-// 5. DRAGGING VARIABLES
-is_dragging = false;
-drag_dx = 0;
-drag_dy = 0; 
-
-// 6. DEFINE UI POSITIONS
-info_box_width = 300;
-info_box_height = 80;
-// (All other UI positions are set in the Step Event)
-
-// --- 7. Setup Player's Critter ---
+// 5. UI & Actors
+info_box_width = 300; info_box_height = 80;
 player_critter_data = global.PlayerData.team[0];
 swap_target_index = 0;
 
-// --- 8. Setup Enemy Critter ---
 var _enemy_key = current_opponent_data.critter_keys[0]; 
 var _enemy_level = current_opponent_data.critter_levels[0];
 var _enemy_db = global.bestiary[$ _enemy_key];
@@ -77,101 +65,213 @@ enemy_critter_data = new AnimalData(
 );
 enemy_critter_data.nickname = _enemy_db.animal_name; 
 
-// 9. Create the "Actors"
-var _player_x_pos = window_x1 + (window_width * 0.3);
-var _player_y_pos = window_y1 + (window_height * 0.7);
-var _enemy_x_pos = window_x1 + (window_width * 0.75);
-var _enemy_y_pos = window_y1 + (window_height * 0.30);
-var _layer_id = layer_get_id("Instances");
-player_actor = instance_create_layer(_player_x_pos, _player_y_pos, _layer_id, obj_player_critter);
-enemy_actor = instance_create_layer(_enemy_x_pos, _enemy_y_pos, _layer_id, obj_enemy_critter);
+// === FIX: CALCULATE POSITIONS BEFORE CREATION ===
+var _player_x = window_x1 + (window_width * 0.3);
+var _player_y = window_y1 + (window_height * 0.7);
+var _enemy_x = window_x1 + (window_width * 0.75);
+var _enemy_y = window_y1 + (window_height * 0.30);
 
-// 10. Initialize the Actors
+var _layer_id = layer_get_id("Instances");
+// Use the calculated coordinates instead of (0, 0)
+player_actor = instance_create_layer(_player_x, _player_y, _layer_id, obj_player_critter);
+enemy_actor = instance_create_layer(_enemy_x, _enemy_y, _layer_id, obj_enemy_critter);
+// ================================================
+
 init_animal(player_actor, player_critter_data, player_critter_data.sprite_idle_back);
 init_animal(enemy_actor, enemy_critter_data, enemy_critter_data.sprite_idle);
 recalculate_stats(player_critter_data);
 recalculate_stats(enemy_critter_data);
 player_critter_data.hp = global.PlayerData.team[0].hp; 
 
-// 11. Set the Scales
+// Scaling Fixes
 player_actor.my_scale = 0.33 * 1.30;
 enemy_actor.my_scale = 0.33;
-
-// === CAPYBARA SCALING FIX ===
-if (player_critter_data.animal_name == "Capybara") {
-    player_actor.my_scale *= 0.8; // 20% smaller (was 0.9)
+if (player_critter_data.animal_name == "Capybara" || player_critter_data.animal_name == "Pomeranian") {
+    player_actor.my_scale *= 0.8; 
 }
 
-// === POMERANIAN SCALING FIX ===
-
-if (player_critter_data.animal_name == "Pomeranian") {
-    player_actor.my_scale *= 0.8; // 20% smaller <-- NEW
-}
-
-// 12. Setup the rest
+// 6. Misc setup
 battle_log_text = "The battle begins!";
-player_chosen_move = noone;
-enemy_chosen_move = noone; 
-is_force_swapping = false; 
+player_chosen_move = noone; enemy_chosen_move = noone; is_force_swapping = false; 
+btn_main_menu = []; btn_move_menu = []; btn_team_layout = [];
+download_start_percent = 0; download_end_percent = 0; download_current_percent = 0;
+download_bar_w = 400; download_bar_h = 30;
+download_filename = ""; download_sprite = noone;
 
-// 13. DEFINE UI BUTTONS
-btn_main_menu = [];
-btn_move_menu = [];
-btn_team_layout = [];
-
-// 14. Download Animation Vars
-download_start_percent = 0;
-download_end_percent = 0;
-download_current_percent = 0;
-download_bar_x1 = 0;
-download_bar_y1 = 0;
-download_bar_w = 400;
-download_bar_h = 30;
-download_filename = "";
-download_sprite = noone;
-// 15. INITIALIZE ALL UI POSITIONS
-window_x2 = window_x1 + window_width;
-window_y2 = window_y1 + window_height;
+// UI Init
+window_x2 = window_x1 + window_width; window_y2 = window_y1 + window_height;
 var _log_y1 = window_y1 + (window_height * 0.8);
-info_enemy_x1 = window_x1 + 20;
-info_enemy_y1 = window_y1 + 40;
-info_enemy_x2 = info_enemy_x1 + info_box_width;
-info_enemy_y2 = info_enemy_y1 + info_box_height;
-info_player_x1 = window_x2 - info_box_width - 20;
-info_player_y1 = _log_y1 - info_box_height - 10; 
-info_player_x2 = info_player_x1 + info_box_width;
-info_player_y2 = info_player_y1 + info_box_height;
+info_enemy_x1 = window_x1 + 20; info_enemy_y1 = window_y1 + 40;
+info_enemy_x2 = info_enemy_x1 + info_box_width; info_enemy_y2 = info_enemy_y1 + info_box_height;
+info_player_x1 = window_x2 - info_box_width - 20; info_player_y1 = _log_y1 - info_box_height - 10; 
+info_player_x2 = info_player_x1 + info_box_width; info_player_y2 = info_player_y1 + info_box_height;
 
-// --- BUTTON SIZE INCREASED TO 175 ---
-var _btn_w = 175;
-var _btn_h = 30;
-var _btn_gutter = 10;
-
+var _btn_w = 175; var _btn_h = 30; var _btn_gutter = 10;
 var _btn_base_x = window_x2 - (_btn_w * 2) - (_btn_gutter * 2);
 var _btn_base_y = _log_y1 + 15;
-btn_main_menu = [
-    [_btn_base_x, _btn_base_y, _btn_base_x + _btn_w, _btn_base_y + _btn_h, "FIGHT"],
-    [_btn_base_x + _btn_w + _btn_gutter, _btn_base_y, _btn_base_x + _btn_w * 2 + _btn_gutter, _btn_base_y + _btn_h, "TEAM"],
-    [_btn_base_x, _btn_base_y + _btn_h + _btn_gutter, _btn_base_x + _btn_w, _btn_base_y + _btn_h * 2 + _btn_gutter, "ITEM"],
-    [_btn_base_x + _btn_w + _btn_gutter, _btn_base_y + _btn_h + _btn_gutter, _btn_base_x + _btn_w * 2 + _btn_gutter, _btn_base_y + _btn_h * 2 + _btn_gutter, "RUN"]
-];
-btn_move_menu = [
-    [_btn_base_x, _btn_base_y, _btn_base_x + _btn_w, _btn_base_y + _btn_h, player_critter_data.moves[0].move_name],
-    [_btn_base_x + _btn_w + _btn_gutter, _btn_base_y, _btn_base_x + _btn_w * 2 + _btn_gutter, _btn_base_y + _btn_h, player_critter_data.moves[1].move_name],
-    [_btn_base_x, _btn_base_y + _btn_h + _btn_gutter, _btn_base_x + _btn_w, _btn_base_y + _btn_h * 2 + _btn_gutter, player_critter_data.moves[2].move_name],
-    [_btn_base_x + _btn_w + _btn_gutter, _btn_base_y + _btn_h + _btn_gutter, _btn_base_x + _btn_w * 2 + _btn_gutter, _btn_base_y + _btn_h * 2 + _btn_gutter, "BACK"]
-];
-var _team_btn_w = 400; var _team_btn_h = 100; var _team_box_padding = 10;
-var _team_box_x_start = window_x1 + 40;
-var _team_box_y_start = window_y1 + 40;
-for (var i = 0; i < 3; i++) {
-    for (var j = 0; j < 2; j++) {
-        var _x1 = _team_box_x_start + (j * (_team_btn_w + _team_box_padding));
-        var _y1 = _team_box_y_start + (i * (_team_btn_h + _team_box_padding));
-        array_push(btn_team_layout, [_x1, _y1, _x1 + _team_btn_w, _y1 + _team_btn_h]);
+
+// Initial Button Arrays
+btn_main_menu = [[0,0,0,0,""], [0,0,0,0,""], [0,0,0,0,""], [0,0,0,0,""]];
+btn_move_menu = [[0,0,0,0,""], [0,0,0,0,""], [0,0,0,0,""], [0,0,0,0,""]]; 
+// (Populated correctly in Step)
+
+
+// ============================================================================
+//   CORE BATTLE LOGIC FUNCTION
+// ============================================================================
+perform_turn_logic = function(_user_actor, _target_actor, _user_data, _target_data, _move) {
+    
+    battle_log_text = _user_data.nickname + " used " + _move.move_name + "!";
+    
+    switch (_move.move_type) {
+        
+        case MOVE_TYPE.DAMAGE:
+            // 1. Visuals
+            if (_move.move_name == "Snap" || _move.move_name == "Poison Bite" || _move.move_name == "Bamboo Bite") {
+                effect_play_bite_lunge(_user_actor, _target_actor);
+                effect_play_bite(_target_actor);
+            } 
+            else if (_move.move_name == "Dive") { 
+                effect_play_dive(_user_actor, _target_actor);
+                effect_play_lunge(_user_actor, _target_actor); 
+            }
+            else if (_move.move_name == "Playful Roll") {
+                effect_play_roll(_user_actor, _target_actor);
+            }
+            else {
+                // Default Lunge + Projectile checks
+                effect_play_lunge(_user_actor, _target_actor);
+                
+                if (_move.move_name == "Ice Pounce") effect_play_ice(_user_actor);
+                if (_move.move_name == "Hydro Headbutt") effect_play_water(_user_actor);
+                if (_move.move_name == "Wing Smack") effect_play_feathers(_user_actor); 
+                if (_move.move_name == "Sticky Tongue") effect_play_tongue(_user_actor);
+                if (_move.move_name == "Shell Bash") effect_play_shockwave(_user_actor);
+                if (_move.move_name == "Gill Slap") effect_play_slap(_target_actor); 
+                if (_move.move_name == "Mud Shot") effect_play_mud(_user_actor, _target_actor);
+                if (_move.move_name == "Pom-Pom Strike") effect_play_puff(_target_actor); 
+                if (_move.move_name == "Scratch" || _move.move_name == "Fur Swipe") effect_play_scratch(_target_actor); 
+                if (_move.move_name == "Pounce") effect_play_lunge(_user_actor, _target_actor);
+                if (_move.move_name == "Bamboo Bite") effect_play_bamboo(_target_actor); 
+            }
+            
+            // 2. Damage Calculation
+            var _atk_mult = get_stat_multiplier(_user_data.atk_stage);
+            var _def_mult = get_stat_multiplier(_target_data.def_stage);
+            var L = _user_data.level; 
+            var A = _user_data.atk * _atk_mult; 
+            var D = _target_data.defense * _def_mult;
+            var P = _move.atk;
+            var _damage = floor( ( ( ( (2 * L / 5) + 2 ) * P * (A / D) ) / 50 ) + 2 );
+            
+            // 3. Side Effects
+            if (_move.move_name == "Mud Shot") {
+                _target_data.spd_stage = clamp(_target_data.spd_stage - 1, -6, 6);
+                battle_log_text = "Mud Shot hit! Speed fell!"; 
+            }
+            if (_move.move_name == "Poison Bite") {
+                effect_play_poison(_target_actor);
+                // TODO: Add poison status logic
+            }
+
+            // 4. Apply Damage
+            _target_data.hp = max(0, _target_data.hp - _damage);
+            effect_play_hurt(_target_actor);
+            break;
+
+        case MOVE_TYPE.HEAL:
+            _user_data.hp = min(_user_data.hp + _move.effect_power, _user_data.max_hp);
+            
+            if (_move.move_name == "Take a Nap") effect_play_sleep(_user_actor);
+            else if (_move.move_name == "Regenerate") effect_play_hearts(_user_actor); 
+            else effect_play_heal_flash(_user_actor); 
+            
+            battle_log_text = _user_data.nickname + " healed!"; 
+            break;
+
+        case MOVE_TYPE.STAT_DEBUFF:
+            if (_move.move_name == "Hiss") { 
+                 effect_play_angry(_user_actor);
+                 _target_data.atk_stage = clamp(_target_data.atk_stage - 1, -6, 6);
+                 battle_log_text = _target_data.nickname + "'s attack fell!";
+                 effect_play_stat_flash(_target_actor, "debuff");
+            } 
+            else if (_move.move_name == "HONK" || _move.move_name == "Squawk") {
+                 effect_play_soundwave(_user_actor);
+                 _target_data.def_stage = clamp(_target_data.def_stage - 1, -6, 6);
+                 battle_log_text = _target_data.nickname + "'s defense fell!";
+                 effect_play_stat_flash(_target_actor, "debuff");
+            }
+            else if (_move.move_name == "Yap") { 
+                 effect_play_yap(_user_actor);
+                 _target_data.atk_stage = clamp(_target_data.atk_stage - 1, -6, 6);
+                 battle_log_text = _target_data.nickname + "'s attack fell!";
+                 effect_play_stat_flash(_target_actor, "debuff");
+            }
+            else {
+                _target_data.def_stage = clamp(_target_data.def_stage - 1, -6, 6);
+                effect_play_stat_flash(_target_actor, "debuff"); 
+                battle_log_text = _target_data.nickname + "'s defense fell!";
+            }
+            break;
+
+        case MOVE_TYPE.STAT_BUFF:
+            if (_move == global.MOVE_SYSTEM_CALL) {
+                _target_data.glitch_timer = 3;
+                battle_log_text = _target_data.nickname + " is corrupting data!";
+                effect_play_hurt(_target_actor); 
+            }
+            else if (_move.move_name == "Snow Cloak") {
+                effect_play_snow(_user_actor);
+                battle_log_text = _user_data.nickname + " hid in the snow!";
+            } 
+            else if (_move.move_name == "Zen Barrier") { 
+                effect_play_zen(_user_actor);
+                battle_log_text = _user_data.nickname + " meditated! Defense rose!"; 
+            } 
+            else if (_move.move_name == "Wall Climb") { 
+                effect_play_up_arrow(_user_actor);
+                _user_data.spd_stage += 1;
+                battle_log_text = _user_data.nickname + " climbed up! Speed rose!";
+            } 
+            else if (_move.move_name == "Tail Shed") { 
+                effect_play_tail_shed(_user_actor);
+                _user_data.def_stage += 2;
+                battle_log_text = _user_data.nickname + " shed its tail! Defense rose sharply!";
+            } 
+            else if (_move.move_name == "Withdraw") {
+                effect_play_shield(_user_actor);
+                _user_data.def_stage += 2;
+                battle_log_text = _user_data.nickname + " withdrew! Defense rose sharply!";
+            } 
+            else if (_move.move_name == "Zoomies") {
+                effect_play_zoomies(_user_actor);
+                _user_data.spd_stage += 2;
+                battle_log_text = _user_data.nickname + " got the zoomies! Speed rose sharply!";
+            }
+            else if (_move.move_name == "Fluff Puff") {
+                effect_play_puff(_user_actor);
+                _user_data.def_stage += 1;
+                battle_log_text = _user_data.nickname + " puffed up! Defense rose!";
+            }
+            else if (_move.move_name == "Dust Bath") {
+                effect_play_dust(_user_actor);
+                _user_data.def_stage += 1;
+                battle_log_text = _user_data.nickname + " rolled in dust! Defense rose!";
+            }
+            else if (_move.move_name == "Coil") {
+                effect_play_coil(_user_actor);
+                _user_data.atk_stage += 1;
+                battle_log_text = _user_data.nickname + " coiled up! Attack rose!";
+            }
+            else if (_move.move_name == "Lazy Stance") {
+                effect_play_lazy(_user_actor);
+                _user_data.def_stage += 1;
+                battle_log_text = _user_data.nickname + " is slacking off! Defense rose!";
+            }
+            else {
+                battle_log_text = _user_data.nickname + "'s stats rose!";
+            }
+            break;
     }
 }
-var _cancel_x = window_x2 - 120 - 20; var _cancel_y = window_y2 - 40 - 20;
-array_push(btn_team_layout, [_cancel_x, _cancel_y, _cancel_x + 120, _cancel_y + 40]);
-download_bar_x1 = window_x1 + (window_width / 2) - (download_bar_w / 2);
-download_bar_y1 = window_y1 + (window_height / 2);
