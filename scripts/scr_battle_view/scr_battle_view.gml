@@ -4,16 +4,13 @@
 /// @function draw_critter_vfx(_actor, _y_offset)
 function draw_critter_vfx(_actor, _y_offset) {
     var _px, _py, _alpha, _size, _p;
-    
-    // Use the actor's position minus the offset (for floating/jumping effects)
     var _base_y = _actor.y - _y_offset;
 
     if (_actor.vfx_type == "ice") {
         for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
             _p = _actor.vfx_particles[i];
             _px = _actor.x + _p.x; _py = _base_y + _p.y;
-            _alpha = _p.life / _p.max_life;
-            draw_set_alpha(_alpha);
+            draw_set_alpha(_p.life / _p.max_life);
             draw_set_color(make_color_rgb(170, 255, 255)); 
             _size = 6 * _p.scale;
             draw_line_width(_px - _size, _py, _px + _size, _py, 3);
@@ -25,25 +22,21 @@ function draw_critter_vfx(_actor, _y_offset) {
         for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
             _p = _actor.vfx_particles[i];
             _px = _actor.x + _p.x; _py = _base_y + _p.y;
-            _alpha = _p.life / _p.max_life;
-            draw_set_alpha(_alpha);
+            draw_set_alpha(_p.life / _p.max_life);
             draw_set_color(c_white);
             draw_circle(_px, _py, 3 * _p.scale, false);
         }
         draw_set_alpha(1.0);
     }
     else if (_actor.vfx_type == "sleep") { 
-        draw_set_font(fnt_vga_bold);
-        draw_set_color(c_white);
+        draw_set_font(fnt_vga_bold); draw_set_color(c_white);
         for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
             _p = _actor.vfx_particles[i];
             _px = _actor.x + _p.x; _py = _base_y + _p.y;
-            _alpha = _p.life / _p.max_life;
-            draw_set_alpha(_alpha);
+            draw_set_alpha(_p.life / _p.max_life);
             draw_text_transformed(_px, _py, "Z", _p.scale, _p.scale, 0);
         }
-        draw_set_alpha(1.0);
-        draw_set_font(fnt_vga);
+        draw_set_alpha(1.0); draw_set_font(fnt_vga);
     }
     else if (_actor.vfx_type == "water") { 
         for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
@@ -86,15 +79,13 @@ function draw_critter_vfx(_actor, _y_offset) {
         draw_set_alpha(1.0);
     }
     else if (_actor.vfx_type == "angry") { 
-        draw_set_font(fnt_vga_bold);
-        draw_set_color(c_red);
+        draw_set_font(fnt_vga_bold); draw_set_color(c_red);
         for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
             _p = _actor.vfx_particles[i];
             _px = _actor.x + _p.x; _py = _base_y + _p.y;
             draw_text(_px, _py, "#!@"); 
         }
-        draw_set_font(fnt_vga);
-        draw_set_color(c_white);
+        draw_set_font(fnt_vga); draw_set_color(c_white);
     }
     else if (_actor.vfx_type == "tongue") { 
         if (array_length(_actor.vfx_particles) > 0) {
@@ -106,15 +97,13 @@ function draw_critter_vfx(_actor, _y_offset) {
         draw_set_color(c_white);
     }
     else if (_actor.vfx_type == "up_arrow") { 
-        draw_set_font(fnt_vga_bold);
-        draw_set_color(c_lime);
+        draw_set_font(fnt_vga_bold); draw_set_color(c_lime);
         for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
             _p = _actor.vfx_particles[i];
             _px = _actor.x + _p.x; _py = _base_y + _p.y;
             draw_text(_px, _py, "^"); 
         }
-        draw_set_font(fnt_vga);
-        draw_set_color(c_white);
+        draw_set_font(fnt_vga); draw_set_color(c_white);
     }
     else if (_actor.vfx_type == "tail_shed") { 
          if (array_length(_actor.vfx_particles) > 0) {
@@ -208,18 +197,34 @@ function draw_critter_vfx(_actor, _y_offset) {
         }
         draw_set_color(c_white);
     }
+    
+    // === BAMBOO DRAW ===
     else if (_actor.vfx_type == "bamboo") {
+        draw_set_alpha(1.0); 
         draw_set_color(c_lime);
+        
         for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
             _p = _actor.vfx_particles[i];
-            _px = _actor.x + _p.x; _py = _base_y + _p.y;
-            var _len = 20;
-            var _dx = lengthdir_x(_len, _p.angle);
-            var _dy = lengthdir_y(_len, _p.angle);
-            draw_line_width(_px - _dx, _py - _dy, _px + _dx, _py + _dy, 4);
+            
+            // Calculate pos
+            _px = _actor.x + _p.x; 
+            _py = _base_y + _p.y;
+            
+            // Force default angle if undefined
+            var _ang = 0;
+            if (variable_struct_exists(_p, "angle")) _ang = _p.angle;
+            
+            var _len = 30;
+            var _dx = lengthdir_x(_len, _ang);
+            var _dy = lengthdir_y(_len, _ang);
+            
+            // Draw
+            draw_line_width(_px - _dx, _py - _dy, _px + _dx, _py + _dy, 6);
         }
         draw_set_color(c_white);
     }
+    // =====================
+    
     else if (_actor.vfx_type == "lazy") {
         draw_set_font(fnt_vga_bold); draw_set_color(c_blue);
         for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
@@ -342,4 +347,24 @@ function draw_move_info_panel(_x1, _y1, _w, _h, _move, _current_pp) {
     
     // Line 3: Description
     draw_text_ext(_x1 + 10, _y1 + 48, _move.description, 16, _w - 20);
+}
+
+/// @function create_button_grid(_x, _y, _w, _h, _gutter, _rows, _cols, _labels)
+function create_button_grid(_x, _y, _w, _h, _gutter, _rows, _cols, _labels) {
+    var _buttons = [];
+    var _count = 0;
+    for (var r = 0; r < _rows; r++) {
+        for (var c = 0; c < _cols; c++) {
+            if (_count >= array_length(_labels)) break;
+            
+            var _bx1 = _x + (c * (_w + _gutter));
+            var _by1 = _y + (r * (_h + _gutter));
+            var _bx2 = _bx1 + _w;
+            var _by2 = _by1 + _h;
+            
+            array_push(_buttons, [_bx1, _by1, _bx2, _by2, _labels[_count]]);
+            _count++;
+        }
+    }
+    return _buttons;
 }

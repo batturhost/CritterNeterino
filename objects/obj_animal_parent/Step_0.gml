@@ -7,8 +7,6 @@ animation_frame = (animation_frame + animation_speed) % sprite_get_number(sprite
 if (flash_alpha > 0) flash_alpha -= 0.05;
 
 // ================== VFX SPAWNING LOGIC ==================
-// This section ONLY handles creating the particles.
-
 var _h = sprite_get_height(sprite_index) * my_scale;
 
 switch (vfx_type) {
@@ -125,13 +123,19 @@ switch (vfx_type) {
         }
         break;
         
+    // === BAMBOO FIX: Aggressive Spawning ===
     case "bamboo":
-        if (vfx_timer == 45) {
-            for (var k = 0; k < 5; k++) {
+        // Spawn only once when the array is empty and timer is running
+        if (vfx_timer > 0 && array_length(vfx_particles) == 0) {
+            for (var k = 0; k < 8; k++) {
                 array_push(vfx_particles, {
-                    x: random_range(-30, 30), y: random_range(-_h, -20),
-                    speed_y: random_range(2, 4), life: 45, max_life: 45,
-                    angle: 0, rot_speed: random_range(-5, 5)
+                    x: random_range(-50, 50), 
+                    y: random_range(-150, -50), // Hardcoded height to ensure it starts above
+                    speed_y: random_range(6, 10), // Fast fall
+                    life: 40,
+                    max_life: 40,
+                    angle: irandom(360), 
+                    rot_speed: random_range(-8, 8)
                 });
             }
         }
@@ -193,14 +197,12 @@ switch (vfx_type) {
         vfx_timer++; if (lunge_state == 0) { vfx_type = "none"; vfx_timer = 0; }
         break;
 
-    // Simple Timers (Shield, Bite, Slap)
     case "shield": case "bite": case "slap": 
         break; 
 }
 
 
 // ================== MASTER VFX UPDATE LOOP ==================
-// Updates all particles in one go, regardless of type
 
 if (array_length(vfx_particles) > 0) {
     for (var i = array_length(vfx_particles) - 1; i >= 0; i--) {
@@ -212,13 +214,20 @@ if (array_length(vfx_particles) > 0) {
         if (variable_struct_exists(_p, "gravity")) _p.speed_y += _p.gravity;
         
         // 2. Physics (Rotation)
-        if (variable_struct_exists(_p, "spin")) _p.angle = (_p[$ "angle"] ?? 0) + _p.spin;
-        if (variable_struct_exists(_p, "rot_speed")) _p.angle = (_p[$ "angle"] ?? 0) + _p.rot_speed;
+        // Check specifically for bamboo logic
+        if (variable_struct_exists(_p, "rot_speed")) {
+             if (!variable_struct_exists(_p, "angle")) _p.angle = 0;
+             _p.angle += _p.rot_speed;
+        }
+        else if (variable_struct_exists(_p, "spin")) {
+             if (!variable_struct_exists(_p, "angle")) _p.angle = 0;
+             _p.angle += _p.spin;
+        }
         
         // 3. Scaling
         if (variable_struct_exists(_p, "scale_speed")) _p.scale += _p.scale_speed;
-        if (vfx_type == "ice") _p.scale = (_p.life / _p.max_life) * (_p[$ "scale"] ?? 1.0); // Unique fade
-        
+        if (vfx_type == "ice") _p.scale = (_p.life / _p.max_life) * (_p[$ "scale"] ?? 1.0);
+
         // 4. Special: Tongue Logic
         if (vfx_type == "tongue" && variable_struct_exists(_p, "length")) {
              if (!_p.retracting) {
@@ -240,49 +249,31 @@ if (vfx_type != "none" && vfx_type != "dive" && vfx_type != "zoomies" && vfx_typ
     vfx_timer--;
     if (vfx_timer <= 0 && array_length(vfx_particles) == 0) vfx_type = "none";
 }
-if ((vfx_type == "zoomies" || vfx_type == "dive" || vfx_type == "roll") && vfx_type != "none") {
-    // These handle their own exit conditions or timer decrements inside the switch
-    if (vfx_type == "zoomies" || vfx_type == "roll") {
-         // Handled inside switch or logic above
-    }
-}
-
-
-// ================== MOVEMENT LOGIC ==================
-
+// Handle movement
 if (is_fainting) {
-    if (faint_scale_y > 0) {
-        faint_scale_y -= 0.02; faint_alpha -= 0.02;   
-    } else {
-        faint_scale_y = 0; faint_alpha = 0;
-    }
+    if (faint_scale_y > 0) { faint_scale_y -= 0.02; faint_alpha -= 0.02; } 
+    else { faint_scale_y = 0; faint_alpha = 0; }
 } else if (shake_timer > 0) {
     shake_timer--;
-    lunge_current_x = random_range(-3, 3);
-    lunge_current_y = random_range(-3, 3); 
+    lunge_current_x = random_range(-3, 3); lunge_current_y = random_range(-3, 3); 
 } else {
     if (!variable_instance_exists(id, "lunge_speed")) lunge_speed = 0.1;
-    
-    // Don't override position if doing complex VFX movement
     if (vfx_type != "dive" && vfx_type != "zoomies") {
         switch (lunge_state) {
-            case 1: // Lunge Forward
+            case 1:
                 lunge_current_x = lerp(lunge_current_x, lunge_target_x - home_x, lunge_speed);
                 lunge_current_y = lerp(lunge_current_y, lunge_target_y - home_y, lunge_speed); 
                 if (abs(lunge_current_x - (lunge_target_x - home_x)) < 5) lunge_state = 2;
                 break;
-            case 2: // Return Home
+            case 2:
                 lunge_current_x = lerp(lunge_current_x, 0, 0.1);
                 lunge_current_y = lerp(lunge_current_y, 0, 0.1); 
                 if (abs(lunge_current_x) < 1 && abs(lunge_current_y) < 1) {
                     lunge_current_x = 0; lunge_current_y = 0; lunge_state = 0; lunge_speed = 0.1;
                 }
                 break;
-            default:
-                lunge_current_x = 0; lunge_current_y = 0;
-                break;
+            default: lunge_current_x = 0; lunge_current_y = 0; break;
         }
-        x = home_x + lunge_current_x;
-        y = home_y + lunge_current_y;
+        x = home_x + lunge_current_x; y = home_y + lunge_current_y;
     }
 }
