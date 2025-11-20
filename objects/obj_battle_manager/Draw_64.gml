@@ -33,10 +33,11 @@ if (current_state == BATTLE_STATE.WIN_DOWNLOAD_PROGRESS || current_state == BATT
     
     // 1. Draw Window Frame
     draw_rectangle_95(_pop_x1, _pop_y1, _pop_x2, _pop_y2, "raised");
-    
+
     // 2. Draw Title Bar
     draw_set_color(c_navy);
-    draw_rectangle(_pop_x1 + 2, _pop_y1 + 2, _pop_x2 - 2, _pop_y1 + 32, false); 
+    draw_rectangle(_pop_x1 + 2, _pop_y1 + 2, _pop_x2 - 2, _pop_y1 + 32, false);
+    
     draw_set_color(c_white);
     draw_set_halign(fa_left);
     draw_set_valign(fa_middle);
@@ -45,13 +46,13 @@ if (current_state == BATTLE_STATE.WIN_DOWNLOAD_PROGRESS || current_state == BATT
     // 3. Draw Content
     draw_set_halign(fa_center);
     draw_set_color(c_black);
-    
+
     if (current_state == BATTLE_STATE.WIN_DOWNLOAD_PROGRESS) {
         // -- DOWNLOADING STATE --
         draw_set_valign(fa_top);
         draw_text(_pop_x1 + (_pop_w/2), _pop_y1 + 80, "Downloading Critter-File...");
         draw_text(_pop_x1 + (_pop_w/2), _pop_y1 + 105, download_filename);
-        
+
         // Progress Bar Logic
         var _bar_w = 300; 
         var _bar_h = 30;
@@ -61,7 +62,7 @@ if (current_state == BATTLE_STATE.WIN_DOWNLOAD_PROGRESS || current_state == BATT
         var _bar_y2 = _bar_y1 + _bar_h;
         
         draw_rectangle_95(_bar_x1, _bar_y1, _bar_x2, _bar_y2, "sunken");
-        
+
         var _fill_width = (_bar_w - 4) * (download_current_percent / 100);
         if (_fill_width > 0) {
             draw_set_color(c_navy);
@@ -76,7 +77,6 @@ if (current_state == BATTLE_STATE.WIN_DOWNLOAD_PROGRESS || current_state == BATT
         draw_set_valign(fa_top);
         draw_set_color(c_black);
         draw_text(_pop_x1 + (_pop_w/2), _pop_y2 - 40, "[Connecting...]");
-        
     } else {
         // -- COMPLETE STATE --
         draw_set_valign(fa_top);
@@ -85,20 +85,24 @@ if (current_state == BATTLE_STATE.WIN_DOWNLOAD_PROGRESS || current_state == BATT
         // Sprite Box
         var _center_x = _pop_x1 + (_pop_w/2);
         var _visual_center_y = _pop_y1 + 175;
-        var _max_w = 200; var _max_h = 130;
-        
+        var _max_w = 140; // <-- FIX: Reduced from 200 to fit new box
+        var _max_h = 140; // <-- FIX: Reduced from 130 to fit new box
+
         // Draw "Sunken" Frame for sprite
-        var _box_w = 250; var _box_h = 200; // Approximate box size around sprite
+        var _box_w = 150; // <-- FIX: Reduced from 250
+        var _box_h = 150; // <-- FIX: Reduced from 200
         draw_rectangle_95(_center_x - _box_w/2, _visual_center_y - _box_h/2, _center_x + _box_w/2, _visual_center_y + _box_h/2, "sunken");
-        
+
         var _spr_w = sprite_get_width(download_sprite);
         var _spr_h = sprite_get_height(download_sprite);
         var _fit_scale = min(_max_w / _spr_w, _max_h / _spr_h);
-        
-        // Draw Sprite
-        draw_sprite_ext(download_sprite, 0, _center_x, _visual_center_y, _fit_scale, _fit_scale, 0, c_white, 1);
-        
-        draw_color = c_black;
+
+        // Draw Sprite Position (Bottom-Center Origin Fix)
+        var _draw_y = _visual_center_y + ((_spr_h / 2) * _fit_scale); // <-- FIX: Calculate centered Y
+
+        draw_sprite_ext(download_sprite, 0, _center_x, _draw_y, _fit_scale, _fit_scale, 0, c_white, 1);
+
+        draw_set_color(c_black);
         draw_text(_pop_x1 + (_pop_w/2), _pop_y2 - 120, "You acquired data for:");
         
         draw_set_color(c_yellow);
@@ -122,13 +126,14 @@ else
     draw_set_halign(fa_left);
     draw_set_valign(fa_top);
     draw_set_color(c_black);
-    
+
     if (!(current_state == BATTLE_STATE.PLAYER_TURN && (current_menu == MENU.FIGHT || current_menu == MENU.TEAM))) {
         draw_text(window_x1 + 15, _log_y1 + 10, battle_log_text);
     }
 
     // 5. Info Boxes
     draw_set_color(c_white);
+
     // Enemy Box
     draw_rectangle_95(info_enemy_x1, info_enemy_y1, info_enemy_x2, info_enemy_y2, "raised");
     draw_set_color(c_black);
@@ -139,7 +144,8 @@ else
     
     var _e_hp_perc = enemy_critter_data.hp / enemy_critter_data.max_hp;
     var _e_bar_x1 = info_enemy_x1 + 10; var _e_bar_y1 = info_enemy_y1 + 40;
-    var _e_bar_x2 = info_enemy_x2 - 10; var _e_bar_y2 = info_enemy_y1 + 60;
+    var _e_bar_x2 = info_enemy_x2 - 10;
+    var _e_bar_y2 = info_enemy_y1 + 60;
     draw_rectangle_95(_e_bar_x1, _e_bar_y1, _e_bar_x2, _e_bar_y2, "sunken"); 
     draw_set_color(c_green);
     draw_rectangle(_e_bar_x1 + 2, _e_bar_y1 + 2, _e_bar_x1 + 2 + ((_e_bar_x2 - _e_bar_x1 - 4) * _e_hp_perc), _e_bar_y2 - 2, false);
@@ -148,14 +154,15 @@ else
     draw_set_color(c_white);
     draw_rectangle_95(info_player_x1, info_player_y1, info_player_x2, info_player_y2, "raised");
     draw_set_color(c_black);
-    draw_text(info_player_x1 + 10, info_player_y1 + 8, player_critter_data.nickname); 
+    draw_text(info_player_x1 + 10, info_player_y1 + 8, player_critter_data.nickname);
     draw_set_halign(fa_right);
     draw_text(info_player_x2 - 10, info_player_y1 + 8, "Lv. " + string(player_critter_data.level));
     draw_set_halign(fa_left);
     
     var _p_hp_perc = player_critter_data.hp / player_critter_data.max_hp;
     var _p_bar_x1 = info_player_x1 + 10; var _p_bar_y1 = info_player_y1 + 40;
-    var _p_bar_x2 = info_player_x2 - 10; var _p_bar_y2 = info_player_y1 + 60;
+    var _p_bar_x2 = info_player_x2 - 10;
+    var _p_bar_y2 = info_player_y1 + 60;
     draw_rectangle_95(_p_bar_x1, _p_bar_y1, _p_bar_x2, _p_bar_y2, "sunken"); 
     draw_set_color(c_green);
     draw_rectangle(_p_bar_x1 + 2, _p_bar_y1 + 2, _p_bar_x1 + 2 + ((_p_bar_x2 - _p_bar_x1 - 4) * _p_hp_perc), _p_bar_y2 - 2, false);
@@ -174,11 +181,12 @@ else
                     var _move = player_critter_data.moves[menu_focus];
                     var _cur_pp = player_critter_data.move_pp[menu_focus];
                     var _info_w = 250; var _info_h = 80;
-                    var _info_x1 = window_x1 + 25; var _info_y1 = _log_y1 + 15;
+                    var _info_x1 = window_x1 + 25;
+                    var _info_y1 = _log_y1 + 15;
                     draw_move_info_panel(_info_x1, _info_y1, _info_w, _info_h, _move, _cur_pp);
                 }
                 break;
-                
+
             case MENU.TEAM:
                 // Draw over the log box area
                 draw_rectangle_95(window_x1 + 5, _log_y1, window_x2 - 5, window_y2 - 5, "raised");
@@ -187,7 +195,7 @@ else
                     var _btn = btn_team_layout[i];
                     var _state = (menu_focus == i) ? "sunken" : "raised";
                     draw_rectangle_95(_btn[0], _btn[1], _btn[2], _btn[3], _state);
-                    
+
                     if (i < _team_size) {
                         var _critter = global.PlayerData.team[i];
                         if (_critter.hp <= 0 || _critter == player_critter_data) draw_set_color(c_dkgray);
@@ -218,6 +226,7 @@ else
                         draw_rectangle_95(_hp_bar_x1, _hp_bar_y1, _hp_bar_x1 + _hp_bar_w, _hp_bar_y1 + _hp_bar_h, "sunken");
                         draw_set_color(c_green);
                         draw_rectangle(_hp_bar_x1 + 2, _hp_bar_y1 + 2, _hp_bar_x1 + 2 + ((_hp_bar_w - 4) * _hp_perc), _hp_bar_y1 + _hp_bar_h - 2, false);
+                        
                         draw_set_color(c_black);
                         draw_set_halign(fa_right);
                         draw_text(_btn[2] - 10, _btn[1] + 55, string(_critter.hp) + "/" + string(_critter.max_hp));
