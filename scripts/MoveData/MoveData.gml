@@ -1,25 +1,21 @@
 // --- MoveData Script ---
-// This is a "constructor" - a template for creating "Move" data
+// Constructor for moves
 
-// NEW: An enum to define our move types
+function MoveData(_name, _atk, _acc, _desc, _effect_desc, _type, _element = "BEAST", _effect_power = 0) constructor {
+    move_name = _name;
+    atk = _atk;
+    accuracy = _acc;
+    description = _desc;
+    effect_description = _effect_desc;
+    move_type = _type;     // DAMAGE, HEAL, STAT_BUFF, STAT_DEBUFF
+    element = _element;    // BEAST, NATURE, HYDRO, AERO, TOXIC
+    effect_power = _effect_power;
+}
+
+// Enum for Move Types
 enum MOVE_TYPE {
     DAMAGE,
     HEAL,
     STAT_BUFF,
     STAT_DEBUFF
-}
-
-// UPDATED: Added _type and _power arguments
-function MoveData(_name, _atk, _accuracy, _description, _blurb, 
-                  _type = MOVE_TYPE.DAMAGE, _power = 0) constructor {
-    
-    move_name = _name;
-    atk = _atk; // Base power for DAMAGE moves
-    accuracy = _accuracy;
-    description = _description; 
-    blurb = _blurb;
-    
-    // --- NEW VARIABLES ---
-    move_type = _type;   // What kind of move is this?
-    effect_power = _power; // How much does it heal? Or what's the stat power?
 }
