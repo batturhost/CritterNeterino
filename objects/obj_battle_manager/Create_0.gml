@@ -1,7 +1,5 @@
 // --- Create Event ---
 
-// ... (Previous Battle Type & State Enum code remains same) ...
-
 // 1. Get Battle Type
 current_level_cap = level_cap;
 if (is_casual == false) {
@@ -59,16 +57,27 @@ swap_target_index = 0;
 var _enemy_key = current_opponent_data.critter_keys[0]; 
 var _enemy_level = current_opponent_data.critter_levels[0];
 var _enemy_db = global.bestiary[$ _enemy_key];
+
+// === CRITICAL FIX: ENSURE ARGUMENT ORDER MATCHES CONSTRUCTOR ===
+// AnimalData(_name, _hp, _atk, _def, _spd, _lvl, _spr_idle, _spr_back, _spr_move, _moves, _blurb, _size, _type)
 enemy_critter_data = new AnimalData(
-    _enemy_db.animal_name, _enemy_db.base_hp, _enemy_db.base_atk,
-    _enemy_db.base_def, _enemy_db.base_spd, _enemy_level, 
-    _enemy_db.sprite_idle, _enemy_db.sprite_idle_back, _enemy_db.sprite_signature_move,
-    _enemy_db.moves, _enemy_db.blurb, _enemy_db.size,
-    _enemy_db.element_type 
+    _enemy_db.animal_name, 
+    _enemy_db.base_hp, 
+    _enemy_db.base_atk,
+    _enemy_db.base_def, 
+    _enemy_db.base_spd, 
+    _enemy_level, 
+    _enemy_db.sprite_idle, 
+    _enemy_db.sprite_idle_back, 
+    _enemy_db.sprite_signature_move,
+    _enemy_db.moves, 
+    _enemy_db.blurb, 
+    _enemy_db.size,
+    _enemy_db.element_type // <--- This was the likely missing/misaligned arg
 );
 enemy_critter_data.nickname = _enemy_db.animal_name; 
 
-// Calculate Spawn Positions FIRST
+// Calculate Spawn Positions
 var _p_x = window_x1 + (window_width * 0.3);
 var _p_y = window_y1 + (window_height * 0.7);
 var _e_x = window_x1 + (window_width * 0.75);
@@ -93,7 +102,10 @@ if (player_critter_data.animal_name == "Capybara" || player_critter_data.animal_
 
 // 6. Misc setup
 battle_log_text = "The battle begins!";
-player_chosen_move = noone; enemy_chosen_move = noone; is_force_swapping = false; 
+player_chosen_move = noone; 
+player_chosen_move_index = -1; 
+enemy_chosen_move = noone; 
+is_force_swapping = false; 
 btn_main_menu = []; btn_move_menu = []; btn_team_layout = [];
 download_start_percent = 0; download_end_percent = 0; download_current_percent = 0;
 download_bar_w = 400; download_bar_h = 30;
@@ -111,7 +123,7 @@ var _btn_w = 175; var _btn_h = 30; var _btn_gutter = 10;
 var _btn_base_x = window_x2 - (_btn_w * 2) - (_btn_gutter * 2);
 var _btn_base_y = _log_y1 + 15;
 
-// === FIX: INITIALIZE BUTTON POSITIONS HERE ===
+// Initialize Buttons
 btn_main_menu = [
     [_btn_base_x, _btn_base_y, _btn_base_x + _btn_w, _btn_base_y + _btn_h, "FIGHT"],
     [_btn_base_x + _btn_w + _btn_gutter, _btn_base_y, _btn_base_x + _btn_w * 2 + _btn_gutter, _btn_base_y + _btn_h, "TEAM"],
@@ -126,7 +138,7 @@ btn_move_menu = [
     [_btn_base_x + _btn_w + _btn_gutter, _btn_base_y + _btn_h + _btn_gutter, _btn_base_x + _btn_w * 2 + _btn_gutter, _btn_base_y + _btn_h * 2 + _btn_gutter, "BACK"]
 ];
 
-// Initialize Team Layout (Off-screen or standard pos)
+// Initialize Team Layout
 btn_team_layout = [];
 var _team_btn_w = 400; var _team_btn_h = 100; var _team_box_padding = 10; 
 var _team_box_x_start = window_x1 + 40; var _team_box_y_start = window_y1 + 40;
@@ -141,19 +153,19 @@ var _cancel_x = window_x2 - 120 - 20; var _cancel_y = window_y2 - 40 - 20;
 array_push(btn_team_layout, [_cancel_x, _cancel_y, _cancel_x + 120, _cancel_y + 40]);
 download_bar_x1 = window_x1 + (window_width / 2) - (download_bar_w / 2); 
 download_bar_y1 = window_y1 + (window_height / 2);
-// =============================================
 
 
 // ============================================================================
-//   CORE BATTLE LOGIC FUNCTION
+//   CORE BATTLE LOGIC FUNCTION (REUSED)
 // ============================================================================
 perform_turn_logic = function(_user_actor, _target_actor, _user_data, _target_data, _move) {
-    // ... (Keep the perform_turn_logic function exactly as previously provided) ...
     
     battle_log_text = _user_data.nickname + " used " + _move.move_name + "!";
     
     switch (_move.move_type) {
+        
         case MOVE_TYPE.DAMAGE:
+            // Visuals
             if (_move.move_name == "Snap" || _move.move_name == "Poison Bite" || _move.move_name == "Bamboo Bite") {
                 effect_play_bite_lunge(_user_actor, _target_actor);
                 effect_play_bite(_target_actor);
@@ -180,9 +192,15 @@ perform_turn_logic = function(_user_actor, _target_actor, _user_data, _target_da
                 if (_move.move_name == "Bamboo Bite") effect_play_bamboo(_target_actor); 
             }
             
+            // Damage Calc
             var _atk_mult = get_stat_multiplier(_user_data.atk_stage);
             var _def_mult = get_stat_multiplier(_target_data.def_stage);
-            var _type_mult = get_type_effectiveness(_move.element, _target_data.element_type);
+            
+            var _type_mult = 1.0;
+            // Use struct accessors to be safe against undefined
+            if (variable_struct_exists(_move, "element") && variable_struct_exists(_target_data, "element_type")) {
+                _type_mult = get_type_effectiveness(_move.element, _target_data.element_type);
+            }
             
             var L = _user_data.level; 
             var A = _user_data.atk * _atk_mult; 
@@ -208,10 +226,16 @@ perform_turn_logic = function(_user_actor, _target_actor, _user_data, _target_da
             break;
 
         case MOVE_TYPE.HEAL:
-            _user_data.hp = min(_user_data.hp + _move.effect_power, _user_data.max_hp);
+            // Ensure we are adding numbers
+            var _heal_amount = _move.effect_power;
+            if (is_string(_heal_amount)) _heal_amount = real(_heal_amount); // Safety conversion
+            
+            _user_data.hp = min(_user_data.hp + _heal_amount, _user_data.max_hp);
+            
             if (_move.move_name == "Take a Nap") effect_play_sleep(_user_actor);
             else if (_move.move_name == "Regenerate") effect_play_hearts(_user_actor); 
             else effect_play_heal_flash(_user_actor); 
+            
             battle_log_text = _user_data.nickname + " healed!"; 
             break;
 
