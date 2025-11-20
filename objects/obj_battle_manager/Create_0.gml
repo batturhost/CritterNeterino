@@ -102,6 +102,12 @@ if (player_critter_data.animal_name == "Capybara") {
     player_actor.my_scale *= 0.8; // 20% smaller (was 0.9)
 }
 
+// === POMERANIAN SCALING FIX ===
+
+if (player_critter_data.animal_name == "Pomeranian") {
+    player_actor.my_scale *= 0.8; // 20% smaller <-- NEW
+}
+
 // 12. Setup the rest
 battle_log_text = "The battle begins!";
 player_chosen_move = noone;

@@ -395,7 +395,7 @@ else if (vfx_type == "slap") {
     if (vfx_timer <= 0) vfx_type = "none";
 }
 
-// --- NEW: DIVE LOGIC (Seagull) ---
+// --- DIVE LOGIC ---
 else if (vfx_type == "dive") {
     switch (vfx_state) {
         case 0: // Rise Up
@@ -405,32 +405,106 @@ else if (vfx_type == "dive") {
                 vfx_timer = 15; // Hover/Wait for a moment
             }
             break;
-            
         case 1: // Dive Down
             if (vfx_timer > 0) {
-                vfx_timer--; // Wait
+                vfx_timer--; 
             } else {
-                // Move towards target fast!
                 var _dir = point_direction(x, y, vfx_target_x, vfx_target_y);
                 var _dist = point_distance(x, y, vfx_target_x, vfx_target_y);
-                
-                var _speed = 40; // Very fast dive
+                var _speed = 40; 
                 x += lengthdir_x(_speed, _dir);
                 y += lengthdir_y(_speed, _dir);
-                
                 if (_dist < _speed) {
                     vfx_state = 2;
-                    vfx_timer = 30; // Wait at target briefly (optional)
+                    vfx_timer = 30; 
                 }
             }
             break;
-            
-        case 2: // Return Home (Reset)
+        case 2: // Return Home
             x = home_x;
             y = home_y;
             vfx_type = "none";
             break;
     }
+}
+
+// --- YAP LOGIC ---
+else if (vfx_type == "yap") {
+    if (vfx_timer % 10 == 0 && vfx_timer > 0) {
+        var _h = sprite_get_height(sprite_index) * my_scale;
+        var _new_particle = {
+            x: 20, 
+            y: -_h * 0.6, 
+            scale: 0.5,
+            life: 30, 
+            max_life: 30
+        };
+        array_push(vfx_particles, _new_particle);
+    }
+    for (var i = array_length(vfx_particles) - 1; i >= 0; i--) {
+        var _p = vfx_particles[i];
+        _p.scale += 0.1; 
+        _p.life -= 1;
+        if (_p.life <= 0) { array_delete(vfx_particles, i, 1); i--; }
+    }
+    vfx_timer--;
+    if (vfx_timer <= 0 && array_length(vfx_particles) == 0) vfx_type = "none";
+}
+
+// --- ZOOMIES LOGIC ---
+else if (vfx_type == "zoomies") {
+    if (vfx_timer > 0) {
+        var _shake = (sin(vfx_timer) * 30); 
+        x = home_x + _shake;
+        if (vfx_timer % 5 == 0) {
+            var _h = sprite_get_height(sprite_index) * my_scale;
+            var _new_particle = {
+                x: random_range(-30, 30), 
+                y: random_range(-_h, 0),
+                speed_x: -10, 
+                life: 10,
+                max_life: 10
+            };
+            array_push(vfx_particles, _new_particle);
+        }
+    } else {
+        x = home_x; 
+    }
+    for (var i = array_length(vfx_particles) - 1; i >= 0; i--) {
+        var _p = vfx_particles[i];
+        _p.x += _p.speed_x;
+        _p.life -= 1;
+        if (_p.life <= 0) { array_delete(vfx_particles, i, 1); i--; }
+    }
+    vfx_timer--;
+    if (vfx_timer <= 0 && array_length(vfx_particles) == 0) vfx_type = "none";
+}
+
+// --- UPDATED: PUFF LOGIC (Impact Bursts) ---
+else if (vfx_type == "puff") {
+    if (vfx_timer % 5 == 0 && vfx_timer > 0) { // Bursts over time
+        var _h = sprite_get_height(sprite_index) * my_scale;
+        // Spawn burst at random locations on target body
+        for (var k = 0; k < 3; k++) {
+            var _new_particle = {
+                x: random_range(-30, 30), 
+                y: random_range(-_h * 0.8, -_h * 0.2),
+                scale: 0.2,
+                life: 20,
+                max_life: 20
+            };
+            array_push(vfx_particles, _new_particle);
+        }
+    }
+    
+    for (var i = array_length(vfx_particles) - 1; i >= 0; i--) {
+        var _p = vfx_particles[i];
+        _p.scale += 0.05; // Rapidly expand
+        _p.life -= 1;
+        if (_p.life <= 0) { array_delete(vfx_particles, i, 1); i--; }
+    }
+    vfx_timer--;
+    if (vfx_timer <= 0 && array_length(vfx_particles) == 0) vfx_type = "none";
 }
 
 // ========================================================
@@ -450,8 +524,8 @@ if (is_fainting) {
 } else {
     if (!variable_instance_exists(id, "lunge_speed")) lunge_speed = 0.1;
     
-    // ** FIX: Don't override position if diving **
-    if (vfx_type != "dive") {
+    // ** FIX: Don't override position if diving or zooming **
+    if (vfx_type != "dive" && vfx_type != "zoomies") {
         switch (lunge_state) {
             case 1: // Lunge Forward
                 lunge_current_x = lerp(lunge_current_x, lunge_target_x - home_x, lunge_speed);

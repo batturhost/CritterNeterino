@@ -16,7 +16,6 @@ if (mouse_check_button_released(mb_left)) {
 }
 
 // --- 3. RECALCULATE ALL UI POSITIONS (OPTIMIZED) ---
-// Only recalculate if we are actually moving the window!
 if (is_dragging) {
     window_x1 = _mx + drag_dx;
     window_y1 = _my + drag_dy;
@@ -218,11 +217,7 @@ switch (current_state) {
                 if (_move.move_name == "Snap") {
                     effect_play_bite_lunge(enemy_actor, player_actor);
                     effect_play_bite(player_actor);
-                } 
-                else if (_move.move_name == "Dive") { // <-- NEW: Dive
-                    effect_play_dive(player_actor, enemy_actor);
-                }
-                else {
+                } else {
                     effect_play_lunge(player_actor, enemy_actor);
                     // VFX Checks
                     if (_move.move_name == "Ice Pounce") effect_play_ice(player_actor);
@@ -232,18 +227,27 @@ switch (current_state) {
                     if (_move.move_name == "Shell Bash") effect_play_shockwave(player_actor);
                     if (_move.move_name == "Gill Slap") effect_play_slap(enemy_actor); 
                     if (_move.move_name == "Mud Shot") effect_play_mud(player_actor, enemy_actor);
+                    if (_move.move_name == "Pom-Pom Strike") effect_play_puff(enemy_actor); // <-- NEW: Apply to enemy for impact
+                    if (_move.move_name == "Scratch" || _move.move_name == "Fur Swipe") effect_play_scratch(player_actor); 
+                    if (_move.move_name == "Playful Roll" || _move.move_name == "Pounce") effect_play_lunge(player_actor, enemy_actor); 
                 }
                 
+                // Standard Damage Calc ...
                 var _atk_mult = get_stat_multiplier(player_critter_data.atk_stage);
                 var _def_mult = get_stat_multiplier(enemy_critter_data.def_stage);
                 var L = player_critter_data.level; var A = player_critter_data.atk * _atk_mult; var D = enemy_critter_data.defense * _def_mult;
                 var P = _move.atk;
                 var _damage = floor( ( ( ( (2 * L / 5) + 2 ) * P * (A / D) ) / 50 ) + 2 );
                 
+                // MUD SHOT SIDE EFFECT (Speed Drop)
                 if (_move.move_name == "Mud Shot") {
                     enemy_critter_data.spd_stage -= 1;
                     enemy_critter_data.spd_stage = clamp(enemy_critter_data.spd_stage, -6, 6);
                     battle_log_text = "Mud Shot hit! Speed fell!"; 
+                }
+                if (_move.move_name == "Poison Bite") {
+                    effect_play_poison(enemy_actor);
+                    battle_log_text = "Poison Bite hit! (Poison logic pending)";
                 }
                 
                 enemy_critter_data.hp = max(0, enemy_critter_data.hp - _damage); effect_play_hurt(enemy_actor); break;
@@ -264,11 +268,19 @@ switch (current_state) {
                      battle_log_text = enemy_critter_data.nickname + "'s attack fell!";
                      effect_play_stat_flash(enemy_actor, "debuff");
                 } 
-                else if (_move.move_name == "HONK" || _move.move_name == "Squawk") { // <-- NEW: Squawk
+                else if (_move.move_name == "HONK" || _move.move_name == "Squawk") {
                      effect_play_soundwave(player_actor);
                      enemy_critter_data.def_stage -= 1;
                      enemy_critter_data.def_stage = clamp(enemy_critter_data.def_stage, -6, 6);
                      battle_log_text = enemy_critter_data.nickname + "'s defense fell!";
+                     effect_play_stat_flash(enemy_actor, "debuff");
+                }
+                // --- NEW: YAP (Pomeranian) ---
+                else if (_move.move_name == "Yap") { 
+                     effect_play_yap(player_actor);
+                     enemy_critter_data.atk_stage -= 1;
+                     enemy_critter_data.atk_stage = clamp(enemy_critter_data.atk_stage, -6, 6);
+                     battle_log_text = enemy_critter_data.nickname + "'s attack fell!";
                      effect_play_stat_flash(enemy_actor, "debuff");
                 }
                 else {
@@ -300,7 +312,24 @@ switch (current_state) {
                     effect_play_shield(player_actor);
                     player_critter_data.def_stage += 2;
                     battle_log_text = player_critter_data.nickname + " withdrew! Defense rose sharply!";
-                } else {
+                } 
+                // --- NEW: ZOOMIES (Pomeranian) ---
+                else if (_move.move_name == "Zoomies") {
+                    effect_play_zoomies(player_actor);
+                    player_critter_data.spd_stage += 2;
+                    battle_log_text = player_critter_data.nickname + " got the zoomies! Speed rose sharply!";
+                }
+                else if (_move.move_name == "Dust Bath") {
+                    effect_play_dust(player_actor);
+                    player_critter_data.def_stage += 1;
+                    battle_log_text = player_critter_data.nickname + " rolled in dust! Defense rose!";
+                }
+                else if (_move.move_name == "Coil") {
+                    effect_play_coil(player_actor);
+                    player_critter_data.atk_stage += 1;
+                    battle_log_text = player_critter_data.nickname + " coiled up! Attack rose!";
+                }
+                else {
                     battle_log_text = player_critter_data.nickname + "'s stats rose!";
                 }
                 break;
@@ -316,12 +345,13 @@ switch (current_state) {
         battle_log_text = enemy_critter_data.nickname + " used " + _move.move_name + "!";
         switch (_move.move_type) {
             case MOVE_TYPE.DAMAGE:
-                if (_move.move_name == "Snap") {
+                if (_move.move_name == "Snap" || _move.move_name == "Bamboo Bite" || _move.move_name == "Poison Bite") {
                     effect_play_bite_lunge(enemy_actor, player_actor);
                     effect_play_bite(player_actor);
                 } 
-                else if (_move.move_name == "Dive") { // <-- NEW: Dive
+                else if (_move.move_name == "Dive") { 
                     effect_play_dive(enemy_actor, player_actor);
+                    effect_play_lunge(enemy_actor, player_actor);
                 }
                 else {
                     effect_play_lunge(enemy_actor, player_actor);
@@ -332,6 +362,9 @@ switch (current_state) {
                     if (_move.move_name == "Shell Bash") effect_play_shockwave(enemy_actor);
                     if (_move.move_name == "Gill Slap") effect_play_slap(player_actor); 
                     if (_move.move_name == "Mud Shot") effect_play_mud(enemy_actor, player_actor); 
+                    if (_move.move_name == "Pom-Pom Strike") effect_play_puff(player_actor); // <-- NEW
+                    if (_move.move_name == "Scratch" || _move.move_name == "Fur Swipe") effect_play_scratch(enemy_actor); 
+                    if (_move.move_name == "Playful Roll" || _move.move_name == "Pounce") effect_play_lunge(enemy_actor, player_actor); 
                 }
                 
                 var _atk_mult = get_stat_multiplier(enemy_critter_data.atk_stage);
@@ -345,6 +378,10 @@ switch (current_state) {
                     player_critter_data.spd_stage = clamp(player_critter_data.spd_stage, -6, 6);
                     battle_log_text = "Mud Shot hit! Speed fell!"; 
                 }
+                if (_move.move_name == "Poison Bite") {
+                    effect_play_poison(player_actor);
+                    battle_log_text = "Poison Bite hit! (Poison logic pending)";
+                }
                 
                 player_critter_data.hp = max(0, player_critter_data.hp - _damage); effect_play_hurt(player_actor); break;
             case MOVE_TYPE.HEAL:
@@ -352,7 +389,7 @@ switch (current_state) {
                 enemy_critter_data.hp = min(enemy_critter_data.hp, enemy_critter_data.max_hp);
                 
                 if (_move.move_name == "Take a Nap") effect_play_sleep(enemy_actor);
-                else if (_move.move_name == "Regenerate") effect_play_hearts(enemy_actor); // <-- NEW
+                else if (_move.move_name == "Regenerate") effect_play_hearts(enemy_actor); 
                 else effect_play_heal_flash(enemy_actor); 
                 
                 battle_log_text = enemy_critter_data.nickname + " healed!"; break;
@@ -364,11 +401,19 @@ switch (current_state) {
                      battle_log_text = player_critter_data.nickname + "'s attack fell!";
                      effect_play_stat_flash(player_actor, "debuff");
                 } 
-                else if (_move.move_name == "HONK" || _move.move_name == "Squawk") { // <-- NEW: Squawk
+                else if (_move.move_name == "HONK" || _move.move_name == "Squawk") {
                      effect_play_soundwave(enemy_actor);
                      player_critter_data.def_stage -= 1;
                      player_critter_data.def_stage = clamp(player_critter_data.def_stage, -6, 6);
                      battle_log_text = player_critter_data.nickname + "'s defense fell!";
+                     effect_play_stat_flash(player_actor, "debuff");
+                }
+                // --- NEW: YAP (Pomeranian) ---
+                else if (_move.move_name == "Yap") { 
+                     effect_play_yap(enemy_actor);
+                     player_critter_data.atk_stage -= 1;
+                     player_critter_data.atk_stage = clamp(player_critter_data.atk_stage, -6, 6);
+                     battle_log_text = player_critter_data.nickname + "'s attack fell!";
                      effect_play_stat_flash(player_actor, "debuff");
                 }
                 else {
@@ -385,7 +430,7 @@ switch (current_state) {
                 } else if (_move.move_name == "Snow Cloak") {
                     effect_play_snow(enemy_actor);
                     battle_log_text = enemy_critter_data.nickname + " hid in the snow!";
-                } else if (_move.move_name == "Zen Barrier") {
+                } else if (_move.move_name == "Zen Barrier") { 
                     effect_play_zen(enemy_actor);
                     battle_log_text = enemy_critter_data.nickname + " meditated! Defense rose!"; 
                 } else if (_move.move_name == "Wall Climb") { 
@@ -396,11 +441,28 @@ switch (current_state) {
                     effect_play_tail_shed(enemy_actor);
                     enemy_critter_data.def_stage += 2;
                     battle_log_text = enemy_critter_data.nickname + " shed its tail! Defense rose sharply!";
-                } else if (_move.move_name == "Withdraw") { 
+                } else if (_move.move_name == "Withdraw") {
                     effect_play_shield(enemy_actor);
                     enemy_critter_data.def_stage += 2;
                     battle_log_text = enemy_critter_data.nickname + " withdrew! Defense rose sharply!";
-                } else {
+                } 
+                // --- NEW: ZOOMIES (Pomeranian) ---
+                else if (_move.move_name == "Zoomies") {
+                    effect_play_zoomies(enemy_actor);
+                    enemy_critter_data.spd_stage += 2;
+                    battle_log_text = enemy_critter_data.nickname + " got the zoomies! Speed rose sharply!";
+                }
+                else if (_move.move_name == "Dust Bath") {
+                    effect_play_dust(enemy_actor);
+                    enemy_critter_data.def_stage += 1;
+                    battle_log_text = enemy_critter_data.nickname + " rolled in dust! Defense rose!";
+                }
+                else if (_move.move_name == "Coil") {
+                    effect_play_coil(enemy_actor);
+                    enemy_critter_data.atk_stage += 1;
+                    battle_log_text = enemy_critter_data.nickname + " coiled up! Attack rose!";
+                }
+                else {
                     battle_log_text = enemy_critter_data.nickname + "'s stats rose!";
                 }
                 break;
