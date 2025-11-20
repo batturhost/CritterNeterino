@@ -9,6 +9,9 @@ draw_set_font(fnt_vga);
 // Check if we are in a special "Download" UI state
 if (current_state == BATTLE_STATE.WIN_DOWNLOAD_PROGRESS || current_state == BATTLE_STATE.WIN_DOWNLOAD_COMPLETE)
 {
+    // ... (Keep existing Download UI code here if you want, or move it to another script too!)
+    // For this refactor I will keep the Download UI inline as it's unique state logic,
+    // but the Battle UI below is heavily optimized.
     #region // --- DOWNLOAD UI ---
     draw_set_color(c_teal);
     draw_rectangle(0, 0, display_get_gui_width(), display_get_gui_height(), false);
@@ -100,329 +103,10 @@ else
     draw_text(window_x1 + (window_width / 2), window_y1 + 17, "CNet_Browser.exe - [BATTLE]");
     draw_set_halign(fa_left);
 
-    // --- 3. Draw Critter Sprites & VFX ---
+    // --- 3. Draw Actors using Helper ---
     var sprite_y_offset = -25;
-
-    // --- HELPER FUNCTION FOR VFX DRAWING ---
-    var draw_critter_vfx = function(_actor, _y_offset) {
-         if (_actor.vfx_type == "ice") {
-            for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
-                var _p = _actor.vfx_particles[i];
-                var _px = _actor.x + _p.x;
-                var _py = _actor.y - _y_offset + _p.y;
-                var _alpha = _p.life / _p.max_life;
-                draw_set_alpha(_alpha);
-                draw_set_color(make_color_rgb(170, 255, 255)); 
-                var _size = 6 * _p.scale;
-                draw_line_width(_px - _size, _py, _px + _size, _py, 3);
-                draw_line_width(_px, _py - _size, _px, _py + _size, 3);
-            }
-            draw_set_alpha(1.0);
-        }
-        else if (_actor.vfx_type == "snow") {
-            for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
-                var _p = _actor.vfx_particles[i];
-                var _px = _actor.x + _p.x;
-                var _py = _actor.y - _y_offset + _p.y;
-                var _alpha = _p.life / _p.max_life;
-                draw_set_alpha(_alpha);
-                draw_set_color(c_white);
-                draw_circle(_px, _py, 3 * _p.scale, false);
-            }
-            draw_set_alpha(1.0);
-        }
-        else if (_actor.vfx_type == "sleep") { 
-            draw_set_font(fnt_vga_bold);
-            draw_set_color(c_white);
-            for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
-                var _p = _actor.vfx_particles[i];
-                var _px = _actor.x + _p.x;
-                var _py = _actor.y - _y_offset + _p.y;
-                var _alpha = _p.life / _p.max_life;
-                draw_set_alpha(_alpha);
-                draw_text_transformed(_px, _py, "Z", _p.scale, _p.scale, 0);
-            }
-            draw_set_alpha(1.0);
-            draw_set_font(fnt_vga);
-        }
-        else if (_actor.vfx_type == "water") { 
-            for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
-                var _p = _actor.vfx_particles[i];
-                var _px = _actor.x + _p.x;
-                var _py = _actor.y - _y_offset + _p.y;
-                
-                draw_set_color(c_aqua);
-                draw_set_alpha(1.0);
-                draw_circle(_px, _py, 4 * _p.scale, false);
-            }
-            draw_set_alpha(1.0);
-        }
-        else if (_actor.vfx_type == "zen") { 
-            if (array_length(_actor.vfx_particles) > 0) {
-                var _p = _actor.vfx_particles[0];
-                var _px = _actor.x + _p.x;
-                var _py = _actor.y - _y_offset + _p.y;
-                var _alpha = _p.life / _p.max_life;
-                draw_set_alpha(_alpha);
-                draw_set_color(c_white);
-                draw_circle(_px, _py, 100 * _p.scale, true);
-                draw_circle(_px, _py, 95 * _p.scale, true);
-            }
-            draw_set_alpha(1.0);
-        }
-        else if (_actor.vfx_type == "soundwave") { 
-            for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
-                var _p = _actor.vfx_particles[i];
-                var _px = _actor.x + _p.x;
-                var _py = _actor.y - _y_offset + _p.y;
-                var _alpha = _p.life / _p.max_life;
-                draw_set_alpha(_alpha);
-                draw_set_color(c_white);
-                draw_circle(_px, _py, 100 * _p.scale, true); 
-            }
-            draw_set_alpha(1.0);
-        }
-        else if (_actor.vfx_type == "feathers") { 
-            for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
-                var _p = _actor.vfx_particles[i];
-                var _px = _actor.x + _p.x;
-                var _py = _actor.y - _y_offset + _p.y;
-                var _alpha = _p.life / _p.max_life;
-                draw_set_alpha(_alpha);
-                draw_set_color(c_white);
-                draw_ellipse(_px - 3, _py - 5, _px + 3, _py + 5, false);
-            }
-            draw_set_alpha(1.0);
-        }
-        else if (_actor.vfx_type == "angry") { 
-            draw_set_font(fnt_vga_bold);
-            draw_set_color(c_red);
-            for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
-                var _p = _actor.vfx_particles[i];
-                var _px = _actor.x + _p.x;
-                var _py = _actor.y - _y_offset + _p.y;
-                draw_text(_px, _py, "#!@"); 
-            }
-            draw_set_font(fnt_vga);
-            draw_set_color(c_white);
-        }
-        else if (_actor.vfx_type == "tongue") { 
-            if (array_length(_actor.vfx_particles) > 0) {
-                var _p = _actor.vfx_particles[0];
-                var _px = _actor.x + _p.x;
-                var _py = _actor.y - _y_offset + _p.y;
-                draw_set_color(c_fuchsia); 
-                draw_line_width(_px, _py, _px + _p.length, _py, 4);
-            }
-            draw_set_color(c_white);
-        }
-        else if (_actor.vfx_type == "up_arrow") { 
-            draw_set_font(fnt_vga_bold);
-            draw_set_color(c_lime);
-            for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
-                var _p = _actor.vfx_particles[i];
-                var _px = _actor.x + _p.x;
-                var _py = _actor.y - _y_offset + _p.y;
-                draw_text(_px, _py, "^"); 
-            }
-            draw_set_font(fnt_vga);
-            draw_set_color(c_white);
-        }
-        else if (_actor.vfx_type == "tail_shed") { 
-             if (array_length(_actor.vfx_particles) > 0) {
-                var _p = _actor.vfx_particles[0];
-                var _px = _actor.x + _p.x;
-                var _py = _actor.y - _y_offset + _p.y;
-                draw_set_color(c_gray); 
-                draw_rectangle_95(_px - 5, _py - 5, _px + 5, _py + 5, "raised"); 
-                draw_set_color(c_white);
-            }
-        }
-        else if (_actor.vfx_type == "shield") { 
-             var _h = sprite_get_height(_actor.sprite_index) * _actor.my_scale;
-             var _w = sprite_get_width(_actor.sprite_index) * _actor.my_scale;
-             draw_set_color(c_aqua); draw_set_alpha(0.4);
-             draw_roundrect(_actor.x - _w/2 - 10, _actor.y - _h - 10, _actor.x + _w/2 + 10, _actor.y + 10, false);
-             draw_set_alpha(1.0); draw_set_color(c_white);
-             draw_roundrect(_actor.x - _w/2 - 10, _actor.y - _h - 10, _actor.x + _w/2 + 10, _actor.y + 10, true);
-        }
-        else if (_actor.vfx_type == "shockwave") { 
-            if (array_length(_actor.vfx_particles) > 0) {
-                var _p = _actor.vfx_particles[0];
-                var _px = _actor.x + _p.x;
-                var _py = _actor.y - _y_offset + _p.y;
-                draw_set_color(c_white);
-                draw_circle(_px, _py, 150 * _p.scale, true); 
-                draw_circle(_px, _py, 140 * _p.scale, true);
-            }
-        }
-        else if (_actor.vfx_type == "bite") { 
-            var _h = sprite_get_height(_actor.sprite_index) * _actor.my_scale;
-            var _px = _actor.x;
-            var _py = _actor.y - _y_offset - (_h/2);
-            draw_set_color(c_white);
-            draw_triangle(_px - 20, _py - 20, _px, _py, _px - 10, _py - 20, false);
-            draw_triangle(_px + 20, _py + 20, _px, _py, _px + 10, _py + 20, false);
-        }
-        else if (_actor.vfx_type == "hearts") { 
-            for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
-                var _p = _actor.vfx_particles[i];
-                var _px = _actor.x + _p.x;
-                var _py = _actor.y - _y_offset + _p.y;
-                draw_set_color(c_fuchsia);
-                var _s = _p.scale * 10;
-                draw_circle(_px - _s/2, _py, _s/2, false);
-                draw_circle(_px + _s/2, _py, _s/2, false);
-                draw_triangle(_px - _s, _py, _px + _s, _py, _px, _py + _s*1.5, false);
-            }
-            draw_set_color(c_white);
-        }
-        else if (_actor.vfx_type == "mud") { 
-            draw_set_color(make_color_rgb(101, 67, 33)); 
-            for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
-                var _p = _actor.vfx_particles[i];
-                var _px = _actor.x + _p.x;
-                var _py = _actor.y - _y_offset + _p.y;
-                draw_circle(_px, _py, 6 * _p.scale, false);
-            }
-            draw_set_color(c_white);
-        }
-        else if (_actor.vfx_type == "slap") { 
-            var _h = sprite_get_height(_actor.sprite_index) * _actor.my_scale;
-            var _px = _actor.x;
-            var _py = _actor.y - _y_offset - (_h/2);
-            draw_set_color(c_fuchsia); draw_set_alpha(0.6);
-            draw_ellipse(_px - 30, _py - 10, _px + 30, _py + 10, false);
-            draw_set_alpha(1.0); draw_set_color(c_white);
-        }
-        else if (_actor.vfx_type == "yap") {
-            draw_set_color(c_orange);
-            for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
-                var _p = _actor.vfx_particles[i];
-                var _px = _actor.x + _p.x;
-                var _py = _actor.y - _y_offset + _p.y;
-                var _r = 50 * _p.scale;
-                draw_line(_px - _r, _py - _r, _px + _r, _py + _r);
-                draw_line(_px - _r, _py + _r, _px + _r, _py - _r);
-            }
-            draw_set_color(c_white);
-        }
-        else if (_actor.vfx_type == "zoomies") {
-            draw_set_color(c_white);
-            draw_set_alpha(0.7);
-            for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
-                var _p = _actor.vfx_particles[i];
-                var _px = _actor.x + _p.x;
-                var _py = _actor.y - _y_offset + _p.y;
-                draw_line_width(_px, _py, _px - 50, _py, 2); 
-            }
-            draw_set_alpha(1.0);
-        }
-        else if (_actor.vfx_type == "puff") {
-            draw_set_color(c_white); // Pure white impact puffs
-            for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
-                var _p = _actor.vfx_particles[i];
-                var _px = _actor.x + _p.x;
-                var _py = _actor.y - _y_offset + _p.y;
-                draw_circle(_px, _py, 10 * _p.scale, false);
-                draw_circle(_px+5, _py+5, 8 * _p.scale, false);
-                draw_circle(_px-5, _py+5, 8 * _p.scale, false);
-            }
-            draw_set_color(c_white);
-        }
-        else if (_actor.vfx_type == "bamboo") {
-            draw_set_color(c_lime);
-            for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
-                var _p = _actor.vfx_particles[i];
-                var _px = _actor.x + _p.x;
-                var _py = _actor.y - _y_offset + _p.y;
-                var _len = 20;
-                var _dx = lengthdir_x(_len, _p.angle);
-                var _dy = lengthdir_y(_len, _p.angle);
-                draw_line_width(_px - _dx, _py - _dy, _px + _dx, _py + _dy, 4);
-            }
-            draw_set_color(c_white);
-        }
-        else if (_actor.vfx_type == "lazy") {
-            draw_set_font(fnt_vga_bold);
-            draw_set_color(c_blue);
-            for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
-                var _p = _actor.vfx_particles[i];
-                var _px = _actor.x + _p.x;
-                var _py = _actor.y - _y_offset + _p.y;
-                draw_text_transformed(_px, _py, "Z", _p.scale, _p.scale, 0);
-            }
-            draw_set_color(c_white);
-            draw_set_font(fnt_vga);
-        }
-    };
-
-    // --- ENEMY (Draws First = Background Layer) ---
-    if (instance_exists(enemy_actor)) {
-        var _e_sprite = enemy_actor.sprite_index;
-        var _e_scale = enemy_actor.my_scale;
-        var _e_x = enemy_actor.x; var _e_y = enemy_actor.y; 
-        var _e_frame = enemy_actor.animation_frame; var _e_alpha = enemy_actor.faint_alpha;
-        var _e_y_scale = enemy_actor.faint_scale_y;
-        
-        if (enemy_actor.vfx_type == "shield") _e_alpha *= 0.2; 
-        
-        draw_set_color(c_black); draw_set_alpha(0.3 * _e_alpha);
-        var _shadow_w = sprite_get_width(_e_sprite) * _e_scale * 0.5; var _shadow_h = _shadow_w * 0.3;
-        draw_ellipse(_e_x - _shadow_w, _e_y - _shadow_h, _e_x + _shadow_w, _e_y + _shadow_h, false);
-        draw_set_alpha(1.0);
-
-        if (enemy_critter_data.glitch_timer > 0) {
-            var _shake_x = random_range(-2, 2);
-            draw_sprite_ext(_e_sprite, _e_frame, _e_x - 3 + _shake_x, _e_y - sprite_y_offset, _e_scale, _e_scale * _e_y_scale, 0, c_red, 0.5);
-            draw_sprite_ext(_e_sprite, _e_frame, _e_x + 3 + _shake_x, _e_y - sprite_y_offset, _e_scale, _e_scale * _e_y_scale, 0, c_aqua, 0.5);
-            draw_sprite_ext(_e_sprite, _e_frame, _e_x + _shake_x, _e_y - sprite_y_offset, _e_scale, _e_scale * _e_y_scale, 0, c_white, _e_alpha);
-        } else {
-            var _rot = 0;
-            if (enemy_actor.vfx_type == "roll") _rot = enemy_actor.vfx_timer * 20;
-            draw_sprite_ext(_e_sprite, _e_frame, _e_x, _e_y - sprite_y_offset, _e_scale, _e_scale * _e_y_scale, _rot, c_white, _e_alpha);
-        }
-
-        draw_critter_vfx(enemy_actor, sprite_y_offset);
-
-        gpu_set_blendmode(bm_add);
-        draw_sprite_ext(_e_sprite, _e_frame, _e_x, _e_y - sprite_y_offset, _e_scale, _e_scale * _e_y_scale, 0, enemy_actor.flash_color, enemy_actor.flash_alpha * _e_alpha);
-        gpu_set_blendmode(bm_normal);
-    }
-
-    // --- PLAYER (Draws Second = Foreground Layer) ---
-    if (instance_exists(player_actor)) {
-        var _p_sprite = player_actor.sprite_index;
-        var _p_scale = player_actor.my_scale;
-        var _p_x = player_actor.x; var _p_y = player_actor.y; 
-        var _p_frame = player_actor.animation_frame; var _p_alpha = player_actor.faint_alpha;
-        var _p_y_scale = player_actor.faint_scale_y;
-        
-        if (player_actor.vfx_type == "shield") _p_alpha *= 0.2; 
-        
-        draw_set_color(c_black); draw_set_alpha(0.3 * _p_alpha);
-        var _shadow_w = sprite_get_width(_p_sprite) * _p_scale * 0.5; var _shadow_h = _shadow_w * 0.3;
-        draw_ellipse(_p_x - _shadow_w, _p_y - _shadow_h, _p_x + _shadow_w, _p_y + _shadow_h, false);
-        draw_set_alpha(1.0);
-
-        if (player_critter_data.glitch_timer > 0) {
-            var _shake_x = random_range(-2, 2);
-            var _shake_y = random_range(-2, 2);
-            draw_sprite_ext(_p_sprite, _p_frame, _p_x - 3 + _shake_x, _p_y - sprite_y_offset + _shake_y, _p_scale, _p_scale * _p_y_scale, 0, c_red, 0.5);
-            draw_sprite_ext(_p_sprite, _p_frame, _p_x + 3 + _shake_x, _p_y - sprite_y_offset + _shake_y, _p_scale, _p_scale * _p_y_scale, 0, c_aqua, 0.5);
-            draw_sprite_ext(_p_sprite, _p_frame, _p_x + _shake_x, _p_y - sprite_y_offset + _shake_y, _p_scale, _p_scale * _p_y_scale, 0, c_white, _p_alpha);
-        } else {
-            var _rot = 0;
-            if (player_actor.vfx_type == "roll") _rot = player_actor.vfx_timer * -20; 
-            draw_sprite_ext(_p_sprite, _p_frame, _p_x, _p_y - sprite_y_offset, _p_scale, _p_scale * _p_y_scale, _rot, c_white, _p_alpha);
-        }
-
-        draw_critter_vfx(player_actor, sprite_y_offset);
-
-        gpu_set_blendmode(bm_add);
-        draw_sprite_ext(_p_sprite, _p_frame, _p_x, _p_y - sprite_y_offset, _p_scale, _p_scale * _p_y_scale, 0, player_actor.flash_color, player_actor.flash_alpha * _p_alpha);
-        gpu_set_blendmode(bm_normal);
-    }
+    draw_battle_actor(enemy_actor, enemy_critter_data, sprite_y_offset);
+    draw_battle_actor(player_actor, player_critter_data, sprite_y_offset);
     
     // --- 4. Draw Battle Log Box ---
     var _log_y1 = window_y1 + (window_height * 0.8);
@@ -479,95 +163,28 @@ else
     draw_set_color(c_white);
     if (current_state == BATTLE_STATE.PLAYER_TURN) {
         draw_set_font(fnt_vga);
-        draw_set_halign(fa_center);
-        draw_set_valign(fa_middle);
+        
         switch (current_menu) {
             case MENU.MAIN:
-                for (var i = 0; i < 4; i++) { 
-                    var _btn = btn_main_menu[i];
-                    var _state = (menu_focus == i) ? "sunken" : "raised"; 
-                    draw_rectangle_95(_btn[0], _btn[1], _btn[2], _btn[3], _state); 
-                    draw_set_color(c_black);
-                    var _btn_w = _btn[2] - _btn[0];
-                    var _btn_h = _btn[3] - _btn[1];
-                    draw_text(_btn[0] + (_btn_w / 2), _btn[1] + (_btn_h / 2), _btn[4]);
-                }
+                draw_battle_menu_buttons(btn_main_menu, menu_focus);
                 break;
-            case MENU.FIGHT:
-                for (var i = 0; i < array_length(btn_move_menu); i++) { 
-                    var _btn = btn_move_menu[i];
-                    var _state = (menu_focus == i) ? "sunken" : "raised"; 
-                    draw_rectangle_95(_btn[0], _btn[1], _btn[2], _btn[3], _state); 
-                    draw_set_color(c_black);
-                    
-                    // Grey out moves with 0 PP
-                    if (i < array_length(player_critter_data.moves) && i != 3) { // 3 is Back
-                         if (player_critter_data.move_pp[i] <= 0) {
-                             draw_set_color(c_gray);
-                         }
-                    }
-                    
-                    var _btn_w = _btn[2] - _btn[0];
-                    var _btn_h = _btn[3] - _btn[1];
-                    draw_text(_btn[0] + (_btn_w / 2), _btn[1] + (_btn_h / 2), _btn[4]);
-                }
                 
-                // ================== NEW: DRAW PP INFO BOX ==================
-                // Only if hovering a valid move (0-2) and not "Back" (3)
+            case MENU.FIGHT:
+                // Draw buttons with PP gray-out logic
+                draw_battle_menu_buttons(btn_move_menu, menu_focus, player_critter_data.move_pp);
+                
+                // Draw Info Panel if hovering a valid move
                 if (menu_focus >= 0 && menu_focus < array_length(player_critter_data.moves) && menu_focus != 3) {
-                    var _focused_move = player_critter_data.moves[menu_focus];
-                    var _current_pp = player_critter_data.move_pp[menu_focus];
-                    var _max_pp = _focused_move.max_pp;
+                    var _move = player_critter_data.moves[menu_focus];
+                    var _cur_pp = player_critter_data.move_pp[menu_focus];
                     
-                    // Box Position (Move to Left side)
-                    var _info_w = 250;
-                    var _info_h = 80;
-                    var _info_x1 = window_x1 + 25; // 25px padding from left window edge
-                    var _info_x2 = _info_x1 + _info_w;
-                    var _info_y1 = _log_y1 + 15; // Align top with buttons
-                    var _info_y2 = _info_y1 + _info_h;
+                    // Calculate Position (Left of buttons)
+                    var _info_w = 250; var _info_h = 80;
+                    var _info_x1 = window_x1 + 25; 
+                    var _info_y1 = _log_y1 + 15;
                     
-                    // Draw Box (Color Change)
-                    var _ui_gray = make_color_rgb(225, 225, 225); 
-                    draw_set_color(_ui_gray);
-                    draw_rectangle(_info_x1, _info_y1, _info_x2, _info_y2, false);
-                    draw_border_95(_info_x1, _info_y1, _info_x2, _info_y2, "raised");
-                    
-                    // Draw Content
-                    draw_set_color(c_black);
-                    draw_set_halign(fa_left);
-                    draw_set_valign(fa_top);
-                    
-                    // Line 1: Type
-                    var _type_col = c_black;
-                    if (_focused_move.element == "HYDRO") _type_col = c_blue;
-                    if (_focused_move.element == "NATURE") _type_col = c_green;
-                    if (_focused_move.element == "TOXIC") _type_col = c_purple;
-                    if (_focused_move.element == "AERO") _type_col = c_aqua;
-                    if (_focused_move.element == "BEAST") _type_col = make_color_rgb(150, 75, 0); // Brown
-                    
-                    draw_set_color(_type_col);
-                    draw_set_font(fnt_vga_bold);
-                    draw_text(_info_x1 + 10, _info_y1 + 8, _focused_move.element);
-                    
-                    // Line 1: PP (Right aligned)
-                    draw_set_halign(fa_right);
-                    draw_set_color(c_black);
-                    draw_text(_info_x2 - 10, _info_y1 + 8, "PP: " + string(_current_pp) + "/" + string(_max_pp));
-                    
-                    // Line 2: Category
-                    draw_set_halign(fa_left);
-                    draw_set_font(fnt_vga);
-                    var _cat = "Physical";
-                    if (_focused_move.move_type == MOVE_TYPE.HEAL) _cat = "Status";
-                    if (_focused_move.move_type == MOVE_TYPE.STAT_BUFF) _cat = "Status";
-                    if (_focused_move.move_type == MOVE_TYPE.STAT_DEBUFF) _cat = "Status";
-                    draw_text(_info_x1 + 10, _info_y1 + 28, "Type: " + _cat);
-                    
-                    // Line 3: Description
-                    draw_text_ext(_info_x1 + 10, _info_y1 + 48, _focused_move.description, 16, _info_w - 20);
+                    draw_move_info_panel(_info_x1, _info_y1, _info_w, _info_h, _move, _cur_pp);
                 }
-                // ===========================================================
                 break;
                 
             case MENU.TEAM:
