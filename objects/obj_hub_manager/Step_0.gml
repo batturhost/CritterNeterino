@@ -111,6 +111,11 @@ else if (start_menu_open) {
                     else with(obj_messenger_manager) { global.top_window_depth--; depth = global.top_window_depth; }
                     if (instance_exists(obj_messenger_icon)) { obj_messenger_icon.is_blinking = false; obj_messenger_icon.blink_timer = 0; }
                     break;
+			    case "save":
+                    save_game();
+                    // Optional: You could play a sound or show a popup here
+                    start_menu_open = false;
+                    break;
                 case "shutdown":
                     game_end();
                     break;

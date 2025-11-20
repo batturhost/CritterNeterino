@@ -64,6 +64,7 @@
     {"id":{"name":"scr_cup_database","path":"scripts/scr_cup_database/scr_cup_database.yy",},},
     {"id":{"name":"scr_draw_helpers","path":"scripts/scr_draw_helpers/scr_draw_helpers.yy",},},
     {"id":{"name":"scr_level_helpers","path":"scripts/scr_level_helpers/scr_level_helpers.yy",},},
+    {"id":{"name":"scr_save_system","path":"scripts/scr_save_system/scr_save_system.yy",},},
     {"id":{"name":"spr_arctic_fox_idle_back","path":"sprites/spr_arctic_fox_idle_back/spr_arctic_fox_idle_back.yy",},},
     {"id":{"name":"spr_arctic_fox_idle","path":"sprites/spr_arctic_fox_idle/spr_arctic_fox_idle.yy",},},
     {"id":{"name":"spr_avatar_user_01","path":"sprites/spr_avatar_user_01/spr_avatar_user_01.yy",},},

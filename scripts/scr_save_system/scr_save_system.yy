@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_save_system",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_save_system",
+  "parent":{
+    "name":"Backup_A",
+    "path":"Backup_A.yyp",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

@@ -62,8 +62,12 @@ menu_items = [
     ["Bestiary", "pokedex"],
     ["Storage System", "pc"],
     ["Messenger", "messenger"],
+    ["Save Game", "save"],    // <--- NEW ITEM
     ["Shut Down...", "shutdown"]
 ];
+
+// (Also increase menu_h slightly if needed to fit the new item)
+menu_h = 295; // Increased from 260 to fit one more item
 // Define list of apps to check for the Taskbar
 // [Object, Label]
 applications_list = [

@@ -23,7 +23,21 @@ if (btn_hovering && mouse_check_button_pressed(mb_left)) {
 
 // Check for button click (CONTINUE)
 if (btn_continue_hovering && mouse_check_button_pressed(mb_left)) {
-    room_goto(rm_installer_start);
+    
+    var _loaded = false;
+    
+    // Only try to load if the system is enabled
+    if (global.ENABLE_SAVE_SYSTEM) {
+        _loaded = load_game();
+    }
+    
+    if (_loaded) {
+        // Save found & System Enabled -> Go to Hub
+        room_goto(rm_hub);
+    } else {
+        // System Disabled OR No Save -> Go to Installer
+        room_goto(rm_installer_start);
+    }
 }
 
 // --- NEW: SPACEBAR SHORTCUT (FIXED) ---
