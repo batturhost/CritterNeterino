@@ -4,7 +4,7 @@
 // DEV TOGGLE: SAVE SYSTEM
 // Set to FALSE to force the game to always start at the Installer.
 // Set to TRUE for normal gameplay (Load save if exists).
-global.ENABLE_SAVE_SYSTEM = true; 
+global.ENABLE_SAVE_SYSTEM = false; 
 // =================================================================
 
 init_database(); 
