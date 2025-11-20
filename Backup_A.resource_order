@@ -29,6 +29,7 @@
     {"name":"obj_sign_up_manager","order":6,"path":"objects/obj_sign_up_manager/obj_sign_up_manager.yy",},
     {"name":"obj_trapdoor_icon","order":19,"path":"objects/obj_trapdoor_icon/obj_trapdoor_icon.yy",},
     {"name":"obj_trapdoor_manager","order":20,"path":"objects/obj_trapdoor_manager/obj_trapdoor_manager.yy",},
+    {"name":"obj_window_parent","order":31,"path":"objects/obj_window_parent/obj_window_parent.yy",},
     {"name":"rm_critter_confirm","order":1,"path":"rooms/rm_critter_confirm/rm_critter_confirm.yy",},
     {"name":"rm_critter_rename","order":2,"path":"rooms/rm_critter_rename/rm_critter_rename.yy",},
     {"name":"rm_hub","order":3,"path":"rooms/rm_hub/rm_hub.yy",},

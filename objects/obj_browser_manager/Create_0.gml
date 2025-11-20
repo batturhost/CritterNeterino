@@ -1,9 +1,22 @@
 // --- Create Event ---
 
-// 1. Get Player & Opponent Data
+// 1. INHERIT PARENT
+event_inherited();
+
+// 2. Window Properties
+window_width = 800;
+window_height = 500;
+window_title = "CritterNet Browser";
+
+// Recalculate Position
+window_x1 = (display_get_gui_width() / 2) - (window_width / 2);
+window_y1 = (display_get_gui_height() / 2) - (window_height / 2);
+window_x2 = window_x1 + window_width;
+window_y2 = window_y1 + window_height;
+
+// 3. Get Player & Opponent Data
 var _cup_index = global.PlayerData.current_cup_index;
 var _opp_index = global.PlayerData.current_opponent_index;
-
 current_cup = global.CupDatabase[_cup_index];
 current_level_cap = current_cup.level_cap;
 current_cup_name = current_cup.cup_name;
@@ -20,9 +33,7 @@ if (_opp_index >= array_length(current_cup.opponents)) {
 player_name = global.PlayerData.name;
 player_pfp = global.PlayerData.profile_pic;
 
-
-// --- 2. GENERATE FLAVOR CONTENT (UPDATED) ---
-
+// 4. FLAVOR CONTENT
 // Weather
 var _w_data = [
     ["Clear Skies", 0, 15, 25], ["Sunny", 0, 20, 32], ["Heatwave", 0, 30, 40],
@@ -34,7 +45,7 @@ var _pick = _w_data[irandom(array_length(_w_data) - 1)];
 weather_desc = _pick[0];
 weather_icon_idx = _pick[1]; 
 weather_temp = irandom_range(_pick[2], _pick[3]);
-weather_string = string(weather_temp); 
+weather_string = string(weather_temp);
 
 // News
 var _news_headlines = [
@@ -56,7 +67,7 @@ var _daily_deals = [
 ];
 current_deal = _daily_deals[irandom(array_length(_daily_deals) - 1)];
 
-// ================== NEW ANIMAL FACT ==================
+// Fact
 var _facts = [
     "Sea otters hold hands while sleeping so they don't drift apart.",
     "A group of flamingos is called a 'flamboyance'.",
@@ -69,22 +80,8 @@ var _facts = [
     "Elephants are the only animal that can't jump."
 ];
 current_fact = _facts[irandom(array_length(_facts) - 1)];
-// ================== END OF NEW CODE ==================
 
-
-// --- 3. Window Layout ---
-window_width = 800;
-window_height = 500;
-window_x1 = (display_get_gui_width() / 2) - (window_width / 2);
-window_y1 = (display_get_gui_height() / 2) - (window_height / 2);
-window_x2 = window_x1 + window_width;
-window_y2 = window_y1 + window_height;
-
-is_dragging = false;
-drag_dx = 0;
-drag_dy = 0;
-
-// --- 4. Define Areas ---
+// 5. Define Areas
 sidebar_w = 180;
 sidebar_x1 = window_x1 + 2;
 sidebar_y1 = window_y1 + 32;
@@ -96,10 +93,9 @@ content_y1 = sidebar_y1;
 content_x2 = window_x2 - 2;
 content_y2 = window_y2 - 2;
 
-
-// --- 5. Define Buttons (Left Sidebar) ---
+// 6. Define Buttons
 var _btn_h = 60; 
-var _start_y = sidebar_y1 + 100; 
+var _start_y = sidebar_y1 + 100;
 var _spacing = 10;
 
 btn_ranked_x1 = sidebar_x1 + 10;
@@ -119,9 +115,6 @@ btn_heal_y1 = btn_casual_y2 + _spacing;
 btn_heal_x2 = sidebar_x2 - 10;
 btn_heal_y2 = btn_heal_y1 + _btn_h;
 btn_heal_hover = false;
-
-btn_close_x1 = 0; btn_close_y1 = 0; btn_close_x2 = 0; btn_close_y2 = 0;
-btn_close_hover = false;
 
 heal_message_text = "";
 heal_message_timer = 0;

@@ -49,6 +49,7 @@
     {"id":{"name":"obj_sign_up_manager","path":"objects/obj_sign_up_manager/obj_sign_up_manager.yy",},},
     {"id":{"name":"obj_trapdoor_icon","path":"objects/obj_trapdoor_icon/obj_trapdoor_icon.yy",},},
     {"id":{"name":"obj_trapdoor_manager","path":"objects/obj_trapdoor_manager/obj_trapdoor_manager.yy",},},
+    {"id":{"name":"obj_window_parent","path":"objects/obj_window_parent/obj_window_parent.yy",},},
     {"id":{"name":"rm_boot","path":"rooms/rm_boot/rm_boot.yy",},},
     {"id":{"name":"rm_critter_confirm","path":"rooms/rm_critter_confirm/rm_critter_confirm.yy",},},
     {"id":{"name":"rm_critter_rename","path":"rooms/rm_critter_rename/rm_critter_rename.yy",},},
