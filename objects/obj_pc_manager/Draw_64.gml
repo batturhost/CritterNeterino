@@ -117,6 +117,7 @@ gpu_set_scissor(pc_list_x1 + 2, pc_list_y1 + 2, pc_list_w - 4, pc_list_h - 4);
 draw_set_valign(fa_middle);
 var _critter_count = array_length(global.PlayerData.pc_box);
 var _max_rows = ceil(_critter_count / pc_grid_cols);
+
 for (var i = pc_scroll_top; i < _max_rows; i++) {
     var _row_y_pos = pc_list_y1 + pc_grid_padding + ((i - pc_scroll_top) * (pc_grid_cell_size + pc_grid_padding));
     if (_row_y_pos > pc_list_y2 - pc_grid_cell_size) { break; }
@@ -126,8 +127,14 @@ for (var i = pc_scroll_top; i < _max_rows; i++) {
         
         var _cell_x1 = pc_list_x1 + pc_grid_padding + (j * (pc_grid_cell_size + pc_grid_padding));
         var _cell_y1 = _row_y_pos;
-        var _state = (_index == pc_selected_index) ? "sunken" : "raised";
-        draw_rectangle_95(_cell_x1, _cell_y1, _cell_x1 + pc_grid_cell_size, _cell_y1 + pc_grid_cell_size, _state);
+        
+        // --- MODIFIED SELECTION DRAWING ---
+        // Only draw the "sunken" box if this item is SELECTED.
+        // Otherwise, draw nothing behind the sprite.
+        if (_index == pc_selected_index) {
+             draw_rectangle_95(_cell_x1, _cell_y1, _cell_x1 + pc_grid_cell_size, _cell_y1 + pc_grid_cell_size, "sunken");
+        }
+        // ----------------------------------
         
         var _critter = global.PlayerData.pc_box[_index];
         var _sprite = _critter.sprite_idle;
@@ -137,6 +144,8 @@ for (var i = pc_scroll_top; i < _max_rows; i++) {
         var _cell_center_x = _cell_x1 + (pc_grid_cell_size / 2);
         var _cell_center_y = _cell_y1 + (pc_grid_cell_size / 2);
         var _draw_y = _cell_center_y + ((_sprite_h / 2) * _scale);
+        
+        // Draw sprite
         draw_sprite_ext(_sprite, 0, _cell_center_x, _draw_y, _scale, _scale, 0, c_white, 1);
     }
 }
@@ -206,10 +215,9 @@ if (feedback_message_timer > 0) {
 }
 
 // --- 10. DRAW THE DRAGGED CRITTER (LAST) ---
-// ================== THIS IS THE FIX ==================
 if (is_dragging_critter) { 
-    var _name = drag_critter_data.nickname; // <--- FIXED: Use drag_critter_data
-    var _level = "Lv. " + string(drag_critter_data.level); // <--- FIXED: Use drag_critter_data
+    var _name = drag_critter_data.nickname;
+    var _level = "Lv. " + string(drag_critter_data.level);
     var _draw_x = _mx - (team_list_w / 2);
     var _draw_y = _my - drag_y_offset;
     
@@ -226,7 +234,6 @@ if (is_dragging_critter) {
     draw_set_halign(fa_right);
     draw_text(_draw_x + team_list_w - 5, _draw_y + 2, _level);
 }
-// ================== END OF FIX =====================
 
 
 // --- 11. Outer Border (Last) ---
