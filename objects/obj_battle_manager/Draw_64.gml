@@ -519,17 +519,17 @@ else
                     var _current_pp = player_critter_data.move_pp[menu_focus];
                     var _max_pp = _focused_move.max_pp;
                     
-                    // Box Position (To the left of buttons)
-                    var _btn_area_x = window_x2 - (175 * 2) - 20; // Approximate btn_base_x
+                    // Box Position (Move to Left side)
                     var _info_w = 250;
                     var _info_h = 80;
-                    var _info_x2 = _btn_area_x - 20;
-                    var _info_x1 = _info_x2 - _info_w;
+                    var _info_x1 = window_x1 + 25; // 25px padding from left window edge
+                    var _info_x2 = _info_x1 + _info_w;
                     var _info_y1 = _log_y1 + 15; // Align top with buttons
                     var _info_y2 = _info_y1 + _info_h;
                     
-                    // Draw Box
-                    draw_set_color(c_white);
+                    // Draw Box (Color Change)
+                    var _ui_gray = make_color_rgb(225, 225, 225); 
+                    draw_set_color(_ui_gray);
                     draw_rectangle(_info_x1, _info_y1, _info_x2, _info_y2, false);
                     draw_border_95(_info_x1, _info_y1, _info_x2, _info_y2, "raised");
                     
