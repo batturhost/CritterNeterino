@@ -1,21 +1,24 @@
 // --- scr_animal_helpers ---
 // This script holds our "actor" functions
 
-// ... (Existing Init/Hurt/Lunge functions) ...
-
+// --- ANIMAL INITIALIZER ---
 function init_animal(_animal_object, _data, _sprite_to_use) {
     _animal_object.my_data = _data;
     _animal_object.sprite_index = _sprite_to_use;
+    
+    // Set its "home" position
     _animal_object.home_x = _animal_object.x;
     _animal_object.home_y = _animal_object.y;
 }
 
+// --- HURT EFFECT ---
 function effect_play_hurt(_actor_object) {
     _actor_object.flash_alpha = 1.0;
     _actor_object.flash_color = c_white;
     _actor_object.shake_timer = 15;
 }
 
+// --- LUNGE EFFECT ---
 function effect_play_lunge(_actor_object, _target_actor) {
     _actor_object.lunge_state = 1;
     var _target_x = _actor_object.home_x + ((_target_actor.x - _actor_object.x) * 0.66);
@@ -25,6 +28,7 @@ function effect_play_lunge(_actor_object, _target_actor) {
     _actor_object.lunge_speed = 0.1; 
 }
 
+// --- BITE LUNGE ---
 function effect_play_bite_lunge(_actor_object, _target_actor) {
     _actor_object.lunge_state = 1;
     var _target_x = _actor_object.home_x + ((_target_actor.x - _actor_object.x) * 0.85); 
@@ -34,12 +38,14 @@ function effect_play_bite_lunge(_actor_object, _target_actor) {
     _actor_object.lunge_speed = 0.25; 
 }
 
+// --- HEAL FLASH EFFECT ---
 function effect_play_heal_flash(_actor_object) {
     _actor_object.flash_alpha = 1.0;
     _actor_object.flash_color = c_lime;
     _actor_object.shake_timer = 0;
 }
 
+// --- STAT FLASH EFFECT ---
 function effect_play_stat_flash(_actor_object, _type = "debuff") {
     _actor_object.flash_alpha = 1.0;
     _actor_object.shake_timer = 0;
@@ -50,9 +56,12 @@ function effect_play_stat_flash(_actor_object, _type = "debuff") {
     }
 }
 
+// --- CHECK HEALTHY CRITTERS ---
 function player_has_healthy_critters() {
     for (var i = 0; i < array_length(global.PlayerData.team); i++) {
-        if (global.PlayerData.team[i].hp > 0) return true;
+        if (global.PlayerData.team[i].hp > 0) {
+            return true;
+        }
     }
     return false;
 }

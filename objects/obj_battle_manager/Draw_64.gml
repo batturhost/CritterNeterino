@@ -238,22 +238,20 @@ else
                 draw_set_color(c_white);
             }
         }
-        // --- NEW: SHIELD (Withdraw - UPDATED VISUALS) ---
+        // --- SHIELD (Withdraw) ---
         else if (_actor.vfx_type == "shield") {
              var _h = sprite_get_height(_actor.sprite_index) * _actor.my_scale;
              var _w = sprite_get_width(_actor.sprite_index) * _actor.my_scale;
              
-             // Draw semi-transparent Aqua background
              draw_set_color(c_aqua);
              draw_set_alpha(0.4);
              draw_roundrect(_actor.x - _w/2 - 10, _actor.y - _h - 10, _actor.x + _w/2 + 10, _actor.y + 10, false);
              
-             // Draw White border
              draw_set_alpha(1.0);
              draw_set_color(c_white);
              draw_roundrect(_actor.x - _w/2 - 10, _actor.y - _h - 10, _actor.x + _w/2 + 10, _actor.y + 10, true);
         }
-        // --- NEW: SHOCKWAVE (Shell Bash) ---
+        // --- SHOCKWAVE (Shell Bash) ---
         else if (_actor.vfx_type == "shockwave") {
             if (array_length(_actor.vfx_particles) > 0) {
                 var _p = _actor.vfx_particles[0];
@@ -264,7 +262,7 @@ else
                 draw_circle(_px, _py, 140 * _p.scale, true);
             }
         }
-        // --- NEW: BITE MARK (Snap) ---
+        // --- BITE MARK (Snap) ---
         else if (_actor.vfx_type == "bite") {
             var _h = sprite_get_height(_actor.sprite_index) * _actor.my_scale;
             var _px = _actor.x;
@@ -273,6 +271,47 @@ else
             // Draw jagged teeth
             draw_triangle(_px - 20, _py - 20, _px, _py, _px - 10, _py - 20, false);
             draw_triangle(_px + 20, _py + 20, _px, _py, _px + 10, _py + 20, false);
+        }
+
+        // --- NEW: HEARTS (Regenerate) ---
+        else if (_actor.vfx_type == "hearts") {
+            for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
+                var _p = _actor.vfx_particles[i];
+                var _px = _actor.x + _p.x;
+                var _py = _actor.y - _y_offset + _p.y;
+                
+                draw_set_color(c_fuchsia);
+                var _s = _p.scale * 10;
+                draw_circle(_px - _s/2, _py, _s/2, false);
+                draw_circle(_px + _s/2, _py, _s/2, false);
+                draw_triangle(_px - _s, _py, _px + _s, _py, _px, _py + _s*1.5, false);
+            }
+            draw_set_color(c_white);
+        }
+        
+        // --- NEW: MUD (Mud Shot) ---
+        else if (_actor.vfx_type == "mud") {
+            draw_set_color(make_color_rgb(101, 67, 33)); // Dark Brown
+            for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
+                var _p = _actor.vfx_particles[i];
+                var _px = _actor.x + _p.x;
+                var _py = _actor.y - _y_offset + _p.y;
+                draw_circle(_px, _py, 6 * _p.scale, false);
+            }
+            draw_set_color(c_white);
+        }
+        
+        // --- NEW: SLAP (Gill Slap) ---
+        else if (_actor.vfx_type == "slap") {
+            var _h = sprite_get_height(_actor.sprite_index) * _actor.my_scale;
+            var _px = _actor.x;
+            var _py = _actor.y - _y_offset - (_h/2);
+            
+            draw_set_color(c_fuchsia);
+            draw_set_alpha(0.6);
+            draw_ellipse(_px - 30, _py - 10, _px + 30, _py + 10, false);
+            draw_set_alpha(1.0);
+            draw_set_color(c_white);
         }
     };
 

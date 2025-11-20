@@ -8,8 +8,6 @@ if (flash_alpha > 0) {
     flash_alpha -= 0.05;
 }
 
-// ... (Keep all the VFX Logic same as previous, no changes needed here) ...
-// (Paste lines 26 through 300 from the previous obj_animal_parent step event here if you need to completely replace the file)
 // ================== VFX LOGIC ==================
 
 // --- ICE SHARDS ---
@@ -303,14 +301,13 @@ else if (vfx_type == "tail_shed") {
     if (vfx_timer <= 0 && array_length(vfx_particles) == 0) vfx_type = "none";
 }
 
-// --- NEW: SHIELD LOGIC ---
+// --- SHIELD LOGIC ---
 else if (vfx_type == "shield") {
-    // Just a timer countdown, the visual is handled in Draw
     vfx_timer--;
     if (vfx_timer <= 0) vfx_type = "none";
 }
 
-// --- NEW: SHOCKWAVE LOGIC ---
+// --- SHOCKWAVE LOGIC ---
 else if (vfx_type == "shockwave") {
     if (vfx_timer == 45) {
          var _new_particle = {
@@ -332,9 +329,69 @@ else if (vfx_type == "shockwave") {
     if (vfx_timer <= 0 && array_length(vfx_particles) == 0) vfx_type = "none";
 }
 
-// --- NEW: BITE LOGIC ---
+// --- BITE LOGIC ---
 else if (vfx_type == "bite") {
-    // Just a fast timer
+    vfx_timer--;
+    if (vfx_timer <= 0) vfx_type = "none";
+}
+
+// --- NEW: HEARTS LOGIC (Floating Up) ---
+else if (vfx_type == "hearts") {
+    if (vfx_timer % 10 == 0 && vfx_timer > 0) {
+        var _h = sprite_get_height(sprite_index) * my_scale;
+        var _new_particle = {
+            x: random_range(-20, 20), 
+            y: -_h * 0.5, 
+            speed_y: -1.5, // Float up
+            life: 50, 
+            max_life: 50,
+            scale: 0.5
+        };
+        array_push(vfx_particles, _new_particle);
+    }
+    for (var i = array_length(vfx_particles) - 1; i >= 0; i--) {
+        var _p = vfx_particles[i];
+        _p.y += _p.speed_y;
+        _p.life -= 1;
+        if (_p.life <= 0) { array_delete(vfx_particles, i, 1); i--; }
+    }
+    vfx_timer--;
+    if (vfx_timer <= 0 && array_length(vfx_particles) == 0) vfx_type = "none";
+}
+
+// --- NEW: MUD LOGIC (Arcing Projectile) ---
+else if (vfx_type == "mud") {
+    if (vfx_timer == 30) { // Spawn 3 mud globs
+        for(var k=0; k<3; k++) {
+             var _new_particle = {
+                x: 0, 
+                y: -20, 
+                // Calculate velocity to hit target in approx 20 frames
+                speed_x: (vfx_target_dx / 20) + random_range(-1, 1),
+                speed_y: (vfx_target_dy / 20) - 5 + random_range(-1, 1), // Arc up (-5)
+                gravity: 0.5,
+                life: 20,
+                max_life: 20,
+                scale: random_range(0.8, 1.2)
+            };
+            array_push(vfx_particles, _new_particle);
+        }
+    }
+    for (var i = array_length(vfx_particles) - 1; i >= 0; i--) {
+        var _p = vfx_particles[i];
+        _p.x += _p.speed_x;
+        _p.y += _p.speed_y;
+        _p.speed_y += _p.gravity; // Apply gravity
+        _p.life -= 1;
+        if (_p.life <= 0) { array_delete(vfx_particles, i, 1); i--; }
+    }
+    vfx_timer--;
+    if (vfx_timer <= 0 && array_length(vfx_particles) == 0) vfx_type = "none";
+}
+
+// --- NEW: SLAP LOGIC (Flash) ---
+else if (vfx_type == "slap") {
+    // Just a timer for the draw event
     vfx_timer--;
     if (vfx_timer <= 0) vfx_type = "none";
 }
@@ -343,52 +400,35 @@ else if (vfx_type == "bite") {
 
 
 // --- 3. Run State Logic (UPDATED FOR SPEED) ---
-
 if (is_fainting) {
     if (faint_scale_y > 0) {
-        faint_scale_y -= 0.02;
-        faint_alpha -= 0.02;   
+        faint_scale_y -= 0.02; faint_alpha -= 0.02;   
     } else {
-        faint_scale_y = 0;
-        faint_alpha = 0;
+        faint_scale_y = 0; faint_alpha = 0;
     }
-    
 } else if (shake_timer > 0) {
     shake_timer--;
     lunge_current_x = random_range(-3, 3);
     lunge_current_y = random_range(-3, 3); 
-    
 } else {
-    // Default speed if variable is not set (safety fallback)
     if (!variable_instance_exists(id, "lunge_speed")) lunge_speed = 0.1;
-    
     switch (lunge_state) {
         case 1: // Lunge Forward
-            // Use the dynamic 'lunge_speed' here!
             lunge_current_x = lerp(lunge_current_x, lunge_target_x - home_x, lunge_speed);
             lunge_current_y = lerp(lunge_current_y, lunge_target_y - home_y, lunge_speed); 
-            
-            if (abs(lunge_current_x - (lunge_target_x - home_x)) < 5) { 
-                lunge_state = 2;
-            }
+            if (abs(lunge_current_x - (lunge_target_x - home_x)) < 5) lunge_state = 2;
             break;
         case 2: // Return Home
             lunge_current_x = lerp(lunge_current_x, 0, 0.1);
             lunge_current_y = lerp(lunge_current_y, 0, 0.1); 
-            
             if (abs(lunge_current_x) < 1 && abs(lunge_current_y) < 1) {
-                lunge_current_x = 0;
-                lunge_current_y = 0;
-                lunge_state = 0;
-                lunge_speed = 0.1; // Reset to normal
+                lunge_current_x = 0; lunge_current_y = 0; lunge_state = 0; lunge_speed = 0.1;
             }
             break;
         default:
-            lunge_current_x = 0;
-            lunge_current_y = 0;
+            lunge_current_x = 0; lunge_current_y = 0;
             break;
     }
 }
-
 x = home_x + lunge_current_x;
 y = home_y + lunge_current_y;

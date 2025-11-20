@@ -1,6 +1,5 @@
 // --- Step Event ---
 
-// ... (Dragging logic remains same) ...
 // --- 1. Get Mouse GUI Coords ---
 var _mx = device_mouse_x_to_gui(0);
 var _my = device_mouse_y_to_gui(0);
@@ -17,10 +16,12 @@ if (mouse_check_button_released(mb_left)) {
 }
 
 // --- 3. RECALCULATE ALL UI POSITIONS (OPTIMIZED) ---
+// Only recalculate if we are actually moving the window!
 if (is_dragging) {
     window_x1 = _mx + drag_dx;
     window_y1 = _my + drag_dy;
-    // ... (Rest of layout logic) ...
+
+    // --- RECALCULATE EVERYTHING ELSE ---
     window_x2 = window_x1 + window_width;
     window_y2 = window_y1 + window_height;
 
@@ -215,33 +216,41 @@ switch (current_state) {
         switch (_move.move_type) {
             case MOVE_TYPE.DAMAGE:
                 if (_move.move_name == "Snap") {
-                    // Use the fast bite lunge!
-                    effect_play_bite_lunge(player_actor, enemy_actor);
-                    effect_play_bite(enemy_actor); 
-                } 
-                else {
-                    // Use standard lunge
+                    effect_play_bite_lunge(enemy_actor, player_actor);
+                    effect_play_bite(player_actor);
+                } else {
                     effect_play_lunge(player_actor, enemy_actor);
-                    
-                    // Other Damage VFX
+                    // VFX Checks
                     if (_move.move_name == "Ice Pounce") effect_play_ice(player_actor);
                     if (_move.move_name == "Hydro Headbutt") effect_play_water(player_actor);
                     if (_move.move_name == "Wing Smack") effect_play_feathers(player_actor); 
                     if (_move.move_name == "Sticky Tongue") effect_play_tongue(player_actor);
                     if (_move.move_name == "Shell Bash") effect_play_shockwave(player_actor);
+                    if (_move.move_name == "Gill Slap") effect_play_slap(enemy_actor); // <-- NEW
+                    if (_move.move_name == "Mud Shot") effect_play_mud(player_actor, enemy_actor); // <-- NEW
                 }
                 
+                // Standard Damage Calc ...
                 var _atk_mult = get_stat_multiplier(player_critter_data.atk_stage);
                 var _def_mult = get_stat_multiplier(enemy_critter_data.def_stage);
                 var L = player_critter_data.level; var A = player_critter_data.atk * _atk_mult; var D = enemy_critter_data.defense * _def_mult;
                 var P = _move.atk;
                 var _damage = floor( ( ( ( (2 * L / 5) + 2 ) * P * (A / D) ) / 50 ) + 2 );
+                
+                // MUD SHOT SIDE EFFECT (Speed Drop)
+                if (_move.move_name == "Mud Shot") {
+                    enemy_critter_data.spd_stage -= 1;
+                    enemy_critter_data.spd_stage = clamp(enemy_critter_data.spd_stage, -6, 6);
+                    battle_log_text = "Mud Shot hit! Speed fell!"; 
+                }
+                
                 enemy_critter_data.hp = max(0, enemy_critter_data.hp - _damage); effect_play_hurt(enemy_actor); break;
             case MOVE_TYPE.HEAL:
                 player_critter_data.hp += _move.effect_power;
                 player_critter_data.hp = min(player_critter_data.hp, player_critter_data.max_hp);
                 
                 if (_move.move_name == "Take a Nap") effect_play_sleep(player_actor);
+                else if (_move.move_name == "Regenerate") effect_play_hearts(player_actor); // <-- NEW
                 else effect_play_heal_flash(player_actor); 
                 
                 battle_log_text = player_critter_data.nickname + " healed!"; break;
@@ -285,7 +294,7 @@ switch (current_state) {
                     effect_play_tail_shed(player_actor);
                     player_critter_data.def_stage += 2;
                     battle_log_text = player_critter_data.nickname + " shed its tail! Defense rose sharply!";
-                } else if (_move.move_name == "Withdraw") {
+                } else if (_move.move_name == "Withdraw") { // <-- NEW
                     effect_play_shield(player_actor);
                     player_critter_data.def_stage += 2;
                     battle_log_text = player_critter_data.nickname + " withdrew! Defense rose sharply!";
@@ -315,6 +324,8 @@ switch (current_state) {
                     if (_move.move_name == "Wing Smack") effect_play_feathers(enemy_actor);
                     if (_move.move_name == "Sticky Tongue") effect_play_tongue(enemy_actor);
                     if (_move.move_name == "Shell Bash") effect_play_shockwave(enemy_actor);
+                    if (_move.move_name == "Gill Slap") effect_play_slap(player_actor); // <-- NEW
+                    if (_move.move_name == "Mud Shot") effect_play_mud(enemy_actor, player_actor); // <-- NEW
                 }
                 
                 var _atk_mult = get_stat_multiplier(enemy_critter_data.atk_stage);
@@ -322,12 +333,20 @@ switch (current_state) {
                 var L = enemy_critter_data.level; var A = enemy_critter_data.atk * _atk_mult; var D = player_critter_data.defense * _def_mult;
                 var P = _move.atk;
                 var _damage = floor( ( ( ( (2 * L / 5) + 2 ) * P * (A / D) ) / 50 ) + 2 );
+                
+                if (_move.move_name == "Mud Shot") {
+                    player_critter_data.spd_stage -= 1;
+                    player_critter_data.spd_stage = clamp(player_critter_data.spd_stage, -6, 6);
+                    battle_log_text = "Mud Shot hit! Speed fell!"; 
+                }
+
                 player_critter_data.hp = max(0, player_critter_data.hp - _damage); effect_play_hurt(player_actor); break;
             case MOVE_TYPE.HEAL:
                 enemy_critter_data.hp += _move.effect_power;
                 enemy_critter_data.hp = min(enemy_critter_data.hp, enemy_critter_data.max_hp);
                 
                 if (_move.move_name == "Take a Nap") effect_play_sleep(enemy_actor);
+                else if (_move.move_name == "Regenerate") effect_play_hearts(enemy_actor); // <-- NEW
                 else effect_play_heal_flash(enemy_actor); 
                 
                 battle_log_text = enemy_critter_data.nickname + " healed!"; break;
@@ -371,7 +390,7 @@ switch (current_state) {
                     effect_play_tail_shed(enemy_actor);
                     enemy_critter_data.def_stage += 2;
                     battle_log_text = enemy_critter_data.nickname + " shed its tail! Defense rose sharply!";
-                } else if (_move.move_name == "Withdraw") { 
+                } else if (_move.move_name == "Withdraw") { // <-- NEW
                     effect_play_shield(enemy_actor);
                     enemy_critter_data.def_stage += 2;
                     battle_log_text = enemy_critter_data.nickname + " withdrew! Defense rose sharply!";

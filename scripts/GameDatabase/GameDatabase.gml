@@ -70,48 +70,7 @@ function init_database() {
         "Avg. Size: 4.0 kg" // Size
     );
 
-    // --- GameDatabase Script ---
-// This function will build our entire Bestiary
-
-function init_database() {
-    
-    // --- 1. DEFINE SHARED MOVES ---
-    
-    global.GENERIC_MOVE_LUNGE = new MoveData("Lunge", 30, 100, "A basic physical lunge.", "A simple lunge.", 
-        MOVE_TYPE.DAMAGE);
-    global.GENERIC_MOVE_AGITATE = new MoveData("Agitate", 0, 100, "The critter looks agitated.", "Lowers enemy defense.", 
-        MOVE_TYPE.STAT_DEBUFF, -1); 
-
-    global.MOVE_SYSTEM_CALL = new MoveData("System_Call", 0, 100, "Corrupts data. [RISKY]", "Applies 'Glitched' status for 3 turns.",
-        MOVE_TYPE.STAT_BUFF, 99); 
-
-
-    // --- 2. DEFINE OUR BESTIARY ---
-    global.bestiary = {};
-
-    // ... (Previous entries for Fox, Capybara, Goose, etc. remain unchanged) ...
-    // Note: For brevity in this chat message, I'm focusing on the changes.
-    // Assume standard entries for Arctic Fox, Capybara, Goose are here.
-    
-    // --- 3. ADD THE ARCTIC FOX ---
-    var move_glacial_pounce = new MoveData("Ice Pounce", 55, 95, "A freezing leap.", "Deals massive damage.", MOVE_TYPE.DAMAGE);
-    var move_snow_cloak = new MoveData("Snow Cloak", 0, 100, "Hides in snow.", "Raises user's defense.", MOVE_TYPE.STAT_BUFF);
-    global.bestiary.arctic_fox = new AnimalData("Arctic Fox", 75, 115, 60, 145, 5, spr_arctic_fox_idle, spr_arctic_fox_idle_back, spr_arctic_fox_idle, [ global.GENERIC_MOVE_LUNGE, move_snow_cloak, move_glacial_pounce ], "Native to the Arctic regions...", "Avg. Size: 3.5 kg");
-
-    // --- 4. ADD THE CAPYBARA ---
-    var move_take_nap = new MoveData("Take a Nap", 0, 100, "Heals 50 HP.", "Restores HP.", MOVE_TYPE.HEAL, 50);
-    var move_hydro_headbutt = new MoveData("Hydro Headbutt", 45, 100, "A wet headbutt.", "Deals water damage.", MOVE_TYPE.DAMAGE);
-    var move_zen_barrier = new MoveData("Zen Barrier", 0, 100, "Meditates calmly.", "Raises defense.", MOVE_TYPE.STAT_BUFF, 1);
-    global.bestiary.capybara = new AnimalData("Capybara", 190, 10, 140, 20, 5, spr_capybara_idle, spr_capybara_idle_back, spr_capybara_idle, [ move_hydro_headbutt, move_zen_barrier, move_take_nap ], "A large, semi-aquatic rodent...", "Avg. Size: 45 kg");
-
-    // --- 5. ADD THE GOOSE ---
-    var move_honk = new MoveData("HONK", 0, 100, "A terrifying noise.", "Lowers enemy defense.", MOVE_TYPE.STAT_DEBUFF, -1);
-    var move_wing_smack = new MoveData("Wing Smack", 45, 100, "A violent flap.", "Strikes with powerful wings.", MOVE_TYPE.DAMAGE);
-    var move_hiss = new MoveData("Hiss", 0, 100, "An angry hiss.", "Lowers enemy attack.", MOVE_TYPE.STAT_DEBUFF, -1);
-    global.bestiary.goose = new AnimalData("Goose", 100, 70, 70, 70, 5, spr_goose_idle, spr_goose_idle_back, spr_goose_idle, [ move_wing_smack, move_hiss, move_honk ], "A large waterfowl...", "Avg. Size: 4.0 kg");
-
-    // --- 6. ADD THE AXOLOTL (UPDATED) ---
-    
+    // --- 6. ADD THE AXOLOTL ---
     // Move 1: Healing - Regenerate
     var move_regenerate = new MoveData("Regenerate", 0, 100, "Regrows cells.", "Heals 50 HP.", 
         MOVE_TYPE.HEAL, 50);
@@ -121,8 +80,6 @@ function init_database() {
         MOVE_TYPE.DAMAGE);
         
     // Move 3: Damage + Debuff - Mud Shot
-    // Note: Since we don't have a specific "Damage+Debuff" type yet, we'll treating it as DAMAGE in the constructor
-    // and handle the side effect in the Battle Manager logic.
     var move_mud_shot = new MoveData("Mud Shot", 20, 95, "Fling mud.", "Damage + Lowers Speed.", 
         MOVE_TYPE.DAMAGE); 
 
@@ -136,23 +93,6 @@ function init_database() {
         "A neotenic salamander. It is known for its ability to regenerate limbs.", 
         "Avg. Size: 0.2 kg"
     );
-    
-    // ... (The rest of the database remains as is for now) ...
-    // --- 7. ADD THE PANDA ---
-    var move_sig_panda = new MoveData("Playful Roll", 40, 100, "A clumsy, adorable roll.", "A strong physical attack.", MOVE_TYPE.DAMAGE);
-    global.bestiary.panda = new AnimalData("Panda", 160, 90, 120, 40, 5, spr_panda_idle, spr_panda_idle_back, spr_panda_idle, [global.GENERIC_MOVE_LUNGE, global.GENERIC_MOVE_AGITATE, move_sig_panda], "A large bear...", "Avg. Size: 100 kg");
-
-    // --- 8. ADD THE BOX TURTLE ---
-    var move_shell_bash = new MoveData("Shell Bash", 50, 100, "Rams with shell.", "A heavy physical strike.", MOVE_TYPE.DAMAGE);
-    var move_withdraw = new MoveData("Withdraw", 0, 100, "Retracts into shell.", "Sharply raises defense.", MOVE_TYPE.STAT_BUFF, 2);
-    var move_turtle_snap = new MoveData("Snap", 40, 100, "A quick bite.", "A fast snapping attack.", MOVE_TYPE.DAMAGE);
-    global.bestiary.box_turtle = new AnimalData("Box Turtle", 120, 40, 200, 20, 5, spr_box_turtle_idle, spr_box_turtle_idle_back, spr_box_turtle_idle, [ move_shell_bash, move_withdraw, move_turtle_snap ], "A turtle with a domed shell...", "Avg. Size: 0.5 kg");
-
-    // ... (Keep remaining entries standard) ...
-    // For safety, I'll skip pasting the rest of the unmodified list to save space, 
-    // but in your file, ensure the rest of the critters (Cat, Chinchilla, etc.) are still there!
-    // If you need the full list again, let me know.
-}
 
     // --- 7. ADD THE PANDA ---
     var move_sig_panda = new MoveData("Playful Roll", 40, 100, "A clumsy, adorable roll.", "A strong physical attack.", MOVE_TYPE.DAMAGE);
@@ -167,17 +107,11 @@ function init_database() {
         "Avg. Size: 100 kg"
     );
 
-    // --- 8. ADD THE BOX TURTLE (FIXED) ---
-    
-    // Move 1: Damage - Shell Bash
+    // --- 8. ADD THE BOX TURTLE ---
     var move_shell_bash = new MoveData("Shell Bash", 50, 100, "Rams with shell.", "A heavy physical strike.", 
         MOVE_TYPE.DAMAGE);
-        
-    // Move 2: Buff - Withdraw
     var move_withdraw = new MoveData("Withdraw", 0, 100, "Retracts into shell.", "Sharply raises defense.", 
         MOVE_TYPE.STAT_BUFF, 2); // +2 Defense
-        
-    // Move 3: Damage - Snap (RENAMED VARIABLE TO FIX CRASH)
     var move_turtle_snap = new MoveData("Snap", 40, 100, "A quick bite.", "A fast snapping attack.", 
         MOVE_TYPE.DAMAGE);
     
