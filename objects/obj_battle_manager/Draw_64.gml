@@ -9,7 +9,6 @@ draw_set_font(fnt_vga);
 // Check if we are in a special "Download" UI state
 if (current_state == BATTLE_STATE.WIN_DOWNLOAD_PROGRESS || current_state == BATTLE_STATE.WIN_DOWNLOAD_COMPLETE)
 {
-    // ... (Download UI Code Omitted) ...
     #region // --- DOWNLOAD UI ---
     draw_set_color(c_teal);
     draw_rectangle(0, 0, display_get_gui_width(), display_get_gui_height(), false);
@@ -296,8 +295,6 @@ else
             draw_ellipse(_px - 30, _py - 10, _px + 30, _py + 10, false);
             draw_set_alpha(1.0); draw_set_color(c_white);
         }
-        
-        // --- NEW: YAP (Jagged Sound Waves) ---
         else if (_actor.vfx_type == "yap") {
             draw_set_color(c_orange);
             for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
@@ -310,8 +307,6 @@ else
             }
             draw_set_color(c_white);
         }
-        
-        // --- NEW: ZOOMIES (Speed Lines) ---
         else if (_actor.vfx_type == "zoomies") {
             draw_set_color(c_white);
             draw_set_alpha(0.7);
@@ -323,20 +318,47 @@ else
             }
             draw_set_alpha(1.0);
         }
-        
-        // --- NEW: PUFF (Impact Clouds) ---
         else if (_actor.vfx_type == "puff") {
             draw_set_color(c_white); // Pure white impact puffs
             for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
                 var _p = _actor.vfx_particles[i];
                 var _px = _actor.x + _p.x;
                 var _py = _actor.y - _y_offset + _p.y;
-                // Draw multiple circles to make it look like a cloud
                 draw_circle(_px, _py, 10 * _p.scale, false);
                 draw_circle(_px+5, _py+5, 8 * _p.scale, false);
                 draw_circle(_px-5, _py+5, 8 * _p.scale, false);
             }
             draw_set_color(c_white);
+        }
+
+        // --- NEW: BAMBOO (Green Rectangles) ---
+        else if (_actor.vfx_type == "bamboo") {
+            draw_set_color(c_lime);
+            for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
+                var _p = _actor.vfx_particles[i];
+                var _px = _actor.x + _p.x;
+                var _py = _actor.y - _y_offset + _p.y;
+                // Draw rotating green stick
+                var _len = 20;
+                var _dx = lengthdir_x(_len, _p.angle);
+                var _dy = lengthdir_y(_len, _p.angle);
+                draw_line_width(_px - _dx, _py - _dy, _px + _dx, _py + _dy, 4);
+            }
+            draw_set_color(c_white);
+        }
+
+        // --- NEW: LAZY (Blue Zs) ---
+        else if (_actor.vfx_type == "lazy") {
+            draw_set_font(fnt_vga_bold);
+            draw_set_color(c_blue);
+            for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
+                var _p = _actor.vfx_particles[i];
+                var _px = _actor.x + _p.x;
+                var _py = _actor.y - _y_offset + _p.y;
+                draw_text_transformed(_px, _py, "Z", _p.scale, _p.scale, 0);
+            }
+            draw_set_color(c_white);
+            draw_set_font(fnt_vga);
         }
     };
 
@@ -351,7 +373,7 @@ else
         var _e_y_scale = enemy_actor.faint_scale_y;
         
         // --- WITHDRAW FADE LOGIC ---
-        if (enemy_actor.vfx_type == "shield") _e_alpha *= 0.2; 
+        if (enemy_actor.vfx_type == "shield") _e_alpha *= 0.2; // Fade out
         
         // Shadow
         draw_set_color(c_black); draw_set_alpha(0.3 * _e_alpha);
@@ -366,7 +388,11 @@ else
             draw_sprite_ext(_e_sprite, _e_frame, _e_x + 3 + _shake_x, _e_y - sprite_y_offset, _e_scale, _e_scale * _e_y_scale, 0, c_aqua, 0.5);
             draw_sprite_ext(_e_sprite, _e_frame, _e_x + _shake_x, _e_y - sprite_y_offset, _e_scale, _e_scale * _e_y_scale, 0, c_white, _e_alpha);
         } else {
-            draw_sprite_ext(_e_sprite, _e_frame, _e_x, _e_y - sprite_y_offset, _e_scale, _e_scale * _e_y_scale, 0, c_white, _e_alpha);
+            // ================== ROLL ROTATION LOGIC ==================
+            var _rot = 0;
+            if (enemy_actor.vfx_type == "roll") _rot = enemy_actor.vfx_timer * 20;
+            draw_sprite_ext(_e_sprite, _e_frame, _e_x, _e_y - sprite_y_offset, _e_scale, _e_scale * _e_y_scale, _rot, c_white, _e_alpha);
+            // =========================================================
         }
 
         // Draw VFX
@@ -386,7 +412,7 @@ else
         var _p_y_scale = player_actor.faint_scale_y;
         
         // --- WITHDRAW FADE LOGIC ---
-        if (player_actor.vfx_type == "shield") _p_alpha *= 0.2; 
+        if (player_actor.vfx_type == "shield") _p_alpha *= 0.2; // Fade out
         
         // Shadow
         draw_set_color(c_black); draw_set_alpha(0.3 * _p_alpha);
@@ -402,7 +428,11 @@ else
             draw_sprite_ext(_p_sprite, _p_frame, _p_x + 3 + _shake_x, _p_y - sprite_y_offset + _shake_y, _p_scale, _p_scale * _p_y_scale, 0, c_aqua, 0.5);
             draw_sprite_ext(_p_sprite, _p_frame, _p_x + _shake_x, _p_y - sprite_y_offset + _shake_y, _p_scale, _p_scale * _p_y_scale, 0, c_white, _p_alpha);
         } else {
-            draw_sprite_ext(_p_sprite, _p_frame, _p_x, _p_y - sprite_y_offset, _p_scale, _p_scale * _p_y_scale, 0, c_white, _p_alpha);
+            // ================== ROLL ROTATION LOGIC ==================
+            var _rot = 0;
+            if (player_actor.vfx_type == "roll") _rot = player_actor.vfx_timer * -20; // Rotate other way for player
+            draw_sprite_ext(_p_sprite, _p_frame, _p_x, _p_y - sprite_y_offset, _p_scale, _p_scale * _p_y_scale, _rot, c_white, _p_alpha);
+            // =========================================================
         }
 
         // Draw VFX

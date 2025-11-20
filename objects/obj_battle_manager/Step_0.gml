@@ -3,6 +3,7 @@
 // --- 1. Get Mouse GUI Coords ---
 var _mx = device_mouse_x_to_gui(0);
 var _my = device_mouse_y_to_gui(0);
+
 // --- 2. DRAGGING LOGIC ---
 if (mouse_check_button_pressed(mb_left)) {
     if (point_in_box(_mx, _my, window_x1, window_y1, window_x2, window_y1 + 32)) {
@@ -15,12 +16,11 @@ if (mouse_check_button_released(mb_left)) {
     is_dragging = false;
 }
 
-// --- 3. RECALCULATE ALL UI POSITIONS (OPTIMIZED) ---
+// --- 3. RECALCULATE ALL UI POSITIONS ---
 if (is_dragging) {
     window_x1 = _mx + drag_dx;
     window_y1 = _my + drag_dy;
 
-    // --- RECALCULATE EVERYTHING ELSE ---
     window_x2 = window_x1 + window_width;
     window_y2 = window_y1 + window_height;
 
@@ -42,7 +42,6 @@ if (is_dragging) {
     info_player_x2 = info_player_x1 + info_box_width;
     info_player_y2 = info_player_y1 + info_box_height;
 
-    // --- BUTTON SIZE INCREASED TO 175 ---
     var _btn_w = 175;
     var _btn_h = 30;
     var _btn_gutter = 10;
@@ -50,7 +49,6 @@ if (is_dragging) {
     var _btn_base_x = window_x2 - (_btn_w * 2) - (_btn_gutter * 2);
     var _btn_base_y = _log_y1 + 15;
 
-    // --- REBUILD BUTTON ARRAYS ---
     btn_main_menu = [
         [_btn_base_x, _btn_base_y, _btn_base_x + _btn_w, _btn_base_y + _btn_h, "FIGHT"],
         [_btn_base_x + _btn_w + _btn_gutter, _btn_base_y, _btn_base_x + _btn_w * 2 + _btn_gutter, _btn_base_y + _btn_h, "TEAM"],
@@ -65,7 +63,6 @@ if (is_dragging) {
         [_btn_base_x + _btn_w + _btn_gutter, _btn_base_y + _btn_h + _btn_gutter, _btn_base_x + _btn_w * 2 + _btn_gutter, _btn_base_y + _btn_h * 2 + _btn_gutter, "BACK"]
     ];
 
-    // Team Layout Array
     btn_team_layout = [];
     var _team_btn_w = 400; 
     var _team_btn_h = 100;
@@ -100,6 +97,7 @@ switch (current_state) {
         break;
 
     case BATTLE_STATE.PLAYER_TURN:
+        // ... (Navigation logic omitted for brevity - keep existing) ...
         if (is_force_swapping) {
             battle_log_text = player_critter_data.nickname + " fainted! Choose a new critter.";
         } else {
@@ -114,95 +112,51 @@ switch (current_state) {
         var _click = mouse_check_button_pressed(mb_left);
         if (is_dragging) { _click = false; }
         
-        // Navigation
         if (current_menu == MENU.MAIN || current_menu == MENU.FIGHT) {
-            if (_up) { menu_focus = max(0, menu_focus - 2);
-            }
-            if (_down) { menu_focus = min(3, menu_focus + 2);
-            }
-            if (_left) { if (menu_focus == 1) { menu_focus = 0;
-            } if (menu_focus == 3) { menu_focus = 2; } }
-            if (_right) { if (menu_focus == 0) { menu_focus = 1;
-            } if (menu_focus == 2) { menu_focus = 3; } }
+            if (_up) menu_focus = max(0, menu_focus - 2);
+            if (_down) menu_focus = min(3, menu_focus + 2);
+            if (_left) { if (menu_focus == 1) menu_focus = 0; if (menu_focus == 3) menu_focus = 2; }
+            if (_right) { if (menu_focus == 0) menu_focus = 1; if (menu_focus == 2) menu_focus = 3; }
         } else if (current_menu == MENU.TEAM) {
-             if (_up) { if (menu_focus == 6) { menu_focus = 4;
-             } else { menu_focus = max(0, menu_focus - 2); } }
-             if (_down) { if (menu_focus >= 4) { menu_focus = 6;
-             } else { menu_focus = min(5, menu_focus + 2); } }
-             if (_left) { if (menu_focus % 2 == 1) { menu_focus--;
-             } }
-             if (_right) { if (menu_focus % 2 == 0 && menu_focus < 6) { menu_focus++;
-             } }
+             if (_up) { if (menu_focus == 6) menu_focus = 4; else menu_focus = max(0, menu_focus - 2); }
+             if (_down) { if (menu_focus >= 4) menu_focus = 6; else menu_focus = min(5, menu_focus + 2); }
+             if (_left) { if (menu_focus % 2 == 1) menu_focus--; }
+             if (_right) { if (menu_focus % 2 == 0 && menu_focus < 6) menu_focus++; }
         }
         
-        // Menu Logic
         switch (current_menu) {
             case MENU.MAIN:
-                for (var i = 0; i < 4; i++) { var _btn = btn_main_menu[i];
-                if (point_in_box(_mx, _my, _btn[0], _btn[1], _btn[2], _btn[3])) { menu_focus = i; if (_click) { _key_enter = true;
-                } } }
+                for (var i = 0; i < 4; i++) { var _btn = btn_main_menu[i]; if (point_in_box(_mx, _my, _btn[0], _btn[1], _btn[2], _btn[3])) { menu_focus = i; if (_click) _key_enter = true; } }
                 if (_key_enter) {
-                    if (is_force_swapping && menu_focus != 1) {
-                        battle_log_text = "You must choose a critter from your TEAM!";
-                        break;
-                    }
+                    if (is_force_swapping && menu_focus != 1) { battle_log_text = "You must choose a critter from your TEAM!"; break; }
                     switch (menu_focus) {
-                        case 0: current_menu = MENU.FIGHT;
-                        menu_focus = 0; break;
+                        case 0: current_menu = MENU.FIGHT; menu_focus = 0; break;
                         case 1: current_menu = MENU.TEAM; menu_focus = 0; break;
                         case 2: battle_log_text = "Item select not implemented yet!"; break;
-                        case 3: if (is_casual) { battle_log_text = "You fled from the casual battle!"; current_state = BATTLE_STATE.LOSE;
-                        } else { battle_log_text = "You can't run from a ranked match!"; } break;
+                        case 3: if (is_casual) { battle_log_text = "You fled from the casual battle!"; current_state = BATTLE_STATE.LOSE; } else { battle_log_text = "You can't run from a ranked match!"; } break;
                     }
                 }
                 break;
             case MENU.FIGHT:
-                for (var i = 0; i < 4; i++) { var _btn = btn_move_menu[i];
-                if (point_in_box(_mx, _my, _btn[0], _btn[1], _btn[2], _btn[3])) { menu_focus = i; if (_click) { _key_enter = true;
-                } } }
+                for (var i = 0; i < 4; i++) { var _btn = btn_move_menu[i]; if (point_in_box(_mx, _my, _btn[0], _btn[1], _btn[2], _btn[3])) { menu_focus = i; if (_click) _key_enter = true; } }
                 if (_key_enter) {
-                    if (menu_focus < 3) { player_chosen_move = player_critter_data.moves[menu_focus];
-                    current_state = BATTLE_STATE.PLAYER_MOVE_RUN; current_menu = MENU.MAIN; menu_focus = 0; }
-                    else { current_menu = MENU.MAIN;
-                    menu_focus = 0; }
+                    if (menu_focus < 3) { player_chosen_move = player_critter_data.moves[menu_focus]; current_state = BATTLE_STATE.PLAYER_MOVE_RUN; current_menu = MENU.MAIN; menu_focus = 0; }
+                    else { current_menu = MENU.MAIN; menu_focus = 0; }
                 }
                 break;
             case MENU.TEAM:
                 var _team_size = array_length(global.PlayerData.team);
-                for (var i = 0; i < _team_size; i++) {
-                    var _btn = btn_team_layout[i];
-                    if (point_in_box(_mx, _my, _btn[0], _btn[1], _btn[2], _btn[3])) {
-                        menu_focus = i;
-                        if (_click) { _key_enter = true; }
-                    }
-                }
+                for (var i = 0; i < _team_size; i++) { var _btn = btn_team_layout[i]; if (point_in_box(_mx, _my, _btn[0], _btn[1], _btn[2], _btn[3])) { menu_focus = i; if (_click) _key_enter = true; } }
                 var _cancel_btn = btn_team_layout[6];
-                if (point_in_box(_mx, _my, _cancel_btn[0], _cancel_btn[1], _cancel_btn[2], _cancel_btn[3])) {
-                    menu_focus = 6;
-                    if (_click) { _key_enter = true; }
-                }
+                if (point_in_box(_mx, _my, _cancel_btn[0], _cancel_btn[1], _cancel_btn[2], _cancel_btn[3])) { menu_focus = 6; if (_click) _key_enter = true; }
                 if (_key_enter) {
                     if (menu_focus == 6) {
-                        if (is_force_swapping) {
-                             battle_log_text = "You must choose a critter to continue!";
-                        } else {
-                            current_menu = MENU.MAIN;
-                            menu_focus = 0;
-                        }
-                    }
-                    else if (menu_focus < _team_size) {
+                        if (is_force_swapping) { battle_log_text = "You must choose a critter to continue!"; } else { current_menu = MENU.MAIN; menu_focus = 0; }
+                    } else if (menu_focus < _team_size) {
                         var _target_critter = global.PlayerData.team[menu_focus];
-                        if (_target_critter == player_critter_data) {
-                            battle_log_text = _target_critter.nickname + " is already in battle!";
-                        } else if (_target_critter.hp <= 0) {
-                            battle_log_text = _target_critter.nickname + " is fainted!";
-                        } else {
-                            swap_target_index = menu_focus;
-                            current_state = BATTLE_STATE.PLAYER_SWAP_OUT;
-                            current_menu = MENU.MAIN;
-                            menu_focus = 0;
-                            is_force_swapping = false;
-                        }
+                        if (_target_critter == player_critter_data) { battle_log_text = _target_critter.nickname + " is already in battle!"; }
+                        else if (_target_critter.hp <= 0) { battle_log_text = _target_critter.nickname + " is fainted!"; }
+                        else { swap_target_index = menu_focus; current_state = BATTLE_STATE.PLAYER_SWAP_OUT; current_menu = MENU.MAIN; menu_focus = 0; is_force_swapping = false; }
                     }
                 }
                 break;
@@ -214,10 +168,19 @@ switch (current_state) {
         battle_log_text = player_critter_data.nickname + " used " + _move.move_name + "!";
         switch (_move.move_type) {
             case MOVE_TYPE.DAMAGE:
-                if (_move.move_name == "Snap") {
+                // --- FIX: Remove Bamboo Bite from here ---
+                if (_move.move_name == "Snap" || _move.move_name == "Poison Bite") {
                     effect_play_bite_lunge(enemy_actor, player_actor);
                     effect_play_bite(player_actor);
-                } else {
+                } 
+                else if (_move.move_name == "Dive") { 
+                    effect_play_dive(player_actor, enemy_actor);
+                    effect_play_lunge(player_actor, enemy_actor); 
+                }
+                else if (_move.move_name == "Playful Roll") {
+                    effect_play_roll(player_actor, enemy_actor);
+                }
+                else {
                     effect_play_lunge(player_actor, enemy_actor);
                     // VFX Checks
                     if (_move.move_name == "Ice Pounce") effect_play_ice(player_actor);
@@ -227,19 +190,19 @@ switch (current_state) {
                     if (_move.move_name == "Shell Bash") effect_play_shockwave(player_actor);
                     if (_move.move_name == "Gill Slap") effect_play_slap(enemy_actor); 
                     if (_move.move_name == "Mud Shot") effect_play_mud(player_actor, enemy_actor);
-                    if (_move.move_name == "Pom-Pom Strike") effect_play_puff(enemy_actor); // <-- NEW: Apply to enemy for impact
+                    if (_move.move_name == "Pom-Pom Strike") effect_play_puff(enemy_actor); 
                     if (_move.move_name == "Scratch" || _move.move_name == "Fur Swipe") effect_play_scratch(player_actor); 
-                    if (_move.move_name == "Playful Roll" || _move.move_name == "Pounce") effect_play_lunge(player_actor, enemy_actor); 
+                    if (_move.move_name == "Pounce") effect_play_lunge(player_actor, enemy_actor);
+                    // --- FIX: Add Bamboo Bite check here ---
+                    if (_move.move_name == "Bamboo Bite") effect_play_bamboo(enemy_actor); 
                 }
                 
-                // Standard Damage Calc ...
                 var _atk_mult = get_stat_multiplier(player_critter_data.atk_stage);
                 var _def_mult = get_stat_multiplier(enemy_critter_data.def_stage);
                 var L = player_critter_data.level; var A = player_critter_data.atk * _atk_mult; var D = enemy_critter_data.defense * _def_mult;
                 var P = _move.atk;
                 var _damage = floor( ( ( ( (2 * L / 5) + 2 ) * P * (A / D) ) / 50 ) + 2 );
                 
-                // MUD SHOT SIDE EFFECT (Speed Drop)
                 if (_move.move_name == "Mud Shot") {
                     enemy_critter_data.spd_stage -= 1;
                     enemy_critter_data.spd_stage = clamp(enemy_critter_data.spd_stage, -6, 6);
@@ -275,7 +238,6 @@ switch (current_state) {
                      battle_log_text = enemy_critter_data.nickname + "'s defense fell!";
                      effect_play_stat_flash(enemy_actor, "debuff");
                 }
-                // --- NEW: YAP (Pomeranian) ---
                 else if (_move.move_name == "Yap") { 
                      effect_play_yap(player_actor);
                      enemy_critter_data.atk_stage -= 1;
@@ -313,11 +275,15 @@ switch (current_state) {
                     player_critter_data.def_stage += 2;
                     battle_log_text = player_critter_data.nickname + " withdrew! Defense rose sharply!";
                 } 
-                // --- NEW: ZOOMIES (Pomeranian) ---
                 else if (_move.move_name == "Zoomies") {
                     effect_play_zoomies(player_actor);
                     player_critter_data.spd_stage += 2;
                     battle_log_text = player_critter_data.nickname + " got the zoomies! Speed rose sharply!";
+                }
+                else if (_move.move_name == "Fluff Puff") {
+                    effect_play_puff(player_actor);
+                    player_critter_data.def_stage += 1;
+                    battle_log_text = player_critter_data.nickname + " puffed up! Defense rose!";
                 }
                 else if (_move.move_name == "Dust Bath") {
                     effect_play_dust(player_actor);
@@ -328,6 +294,11 @@ switch (current_state) {
                     effect_play_coil(player_actor);
                     player_critter_data.atk_stage += 1;
                     battle_log_text = player_critter_data.nickname + " coiled up! Attack rose!";
+                }
+                else if (_move.move_name == "Lazy Stance") {
+                    effect_play_lazy(player_actor);
+                    player_critter_data.def_stage += 1;
+                    battle_log_text = player_critter_data.nickname + " is slacking off! Defense rose!";
                 }
                 else {
                     battle_log_text = player_critter_data.nickname + "'s stats rose!";
@@ -345,13 +316,17 @@ switch (current_state) {
         battle_log_text = enemy_critter_data.nickname + " used " + _move.move_name + "!";
         switch (_move.move_type) {
             case MOVE_TYPE.DAMAGE:
-                if (_move.move_name == "Snap" || _move.move_name == "Bamboo Bite" || _move.move_name == "Poison Bite") {
+                // --- FIX: Remove Bamboo Bite from here ---
+                if (_move.move_name == "Snap" || _move.move_name == "Poison Bite") {
                     effect_play_bite_lunge(enemy_actor, player_actor);
                     effect_play_bite(player_actor);
                 } 
                 else if (_move.move_name == "Dive") { 
                     effect_play_dive(enemy_actor, player_actor);
                     effect_play_lunge(enemy_actor, player_actor);
+                }
+                else if (_move.move_name == "Playful Roll") {
+                    effect_play_roll(enemy_actor, player_actor); 
                 }
                 else {
                     effect_play_lunge(enemy_actor, player_actor);
@@ -362,9 +337,11 @@ switch (current_state) {
                     if (_move.move_name == "Shell Bash") effect_play_shockwave(enemy_actor);
                     if (_move.move_name == "Gill Slap") effect_play_slap(player_actor); 
                     if (_move.move_name == "Mud Shot") effect_play_mud(enemy_actor, player_actor); 
-                    if (_move.move_name == "Pom-Pom Strike") effect_play_puff(player_actor); // <-- NEW
+                    if (_move.move_name == "Pom-Pom Strike") effect_play_puff(player_actor); 
                     if (_move.move_name == "Scratch" || _move.move_name == "Fur Swipe") effect_play_scratch(enemy_actor); 
-                    if (_move.move_name == "Playful Roll" || _move.move_name == "Pounce") effect_play_lunge(enemy_actor, player_actor); 
+                    if (_move.move_name == "Pounce") effect_play_lunge(enemy_actor, player_actor); 
+                    // --- FIX: Add Bamboo Bite check here ---
+                    if (_move.move_name == "Bamboo Bite") effect_play_bamboo(player_actor);
                 }
                 
                 var _atk_mult = get_stat_multiplier(enemy_critter_data.atk_stage);
@@ -408,7 +385,6 @@ switch (current_state) {
                      battle_log_text = player_critter_data.nickname + "'s defense fell!";
                      effect_play_stat_flash(player_actor, "debuff");
                 }
-                // --- NEW: YAP (Pomeranian) ---
                 else if (_move.move_name == "Yap") { 
                      effect_play_yap(enemy_actor);
                      player_critter_data.atk_stage -= 1;
@@ -446,11 +422,15 @@ switch (current_state) {
                     enemy_critter_data.def_stage += 2;
                     battle_log_text = enemy_critter_data.nickname + " withdrew! Defense rose sharply!";
                 } 
-                // --- NEW: ZOOMIES (Pomeranian) ---
                 else if (_move.move_name == "Zoomies") {
                     effect_play_zoomies(enemy_actor);
                     enemy_critter_data.spd_stage += 2;
                     battle_log_text = enemy_critter_data.nickname + " got the zoomies! Speed rose sharply!";
+                }
+                else if (_move.move_name == "Fluff Puff") {
+                    effect_play_puff(enemy_actor);
+                    enemy_critter_data.def_stage += 1;
+                    battle_log_text = enemy_critter_data.nickname + " puffed up! Defense rose!";
                 }
                 else if (_move.move_name == "Dust Bath") {
                     effect_play_dust(enemy_actor);
@@ -461,6 +441,11 @@ switch (current_state) {
                     effect_play_coil(enemy_actor);
                     enemy_critter_data.atk_stage += 1;
                     battle_log_text = enemy_critter_data.nickname + " coiled up! Attack rose!";
+                }
+                else if (_move.move_name == "Lazy Stance") {
+                    effect_play_lazy(enemy_actor);
+                    enemy_critter_data.def_stage += 1;
+                    battle_log_text = enemy_critter_data.nickname + " is slacking off! Defense rose!";
                 }
                 else {
                     battle_log_text = enemy_critter_data.nickname + "'s stats rose!";

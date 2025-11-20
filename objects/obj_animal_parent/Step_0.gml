@@ -405,22 +405,27 @@ else if (vfx_type == "dive") {
                 vfx_timer = 15; // Hover/Wait for a moment
             }
             break;
+            
         case 1: // Dive Down
             if (vfx_timer > 0) {
-                vfx_timer--; 
+                vfx_timer--; // Wait
             } else {
+                // Move towards target fast!
                 var _dir = point_direction(x, y, vfx_target_x, vfx_target_y);
                 var _dist = point_distance(x, y, vfx_target_x, vfx_target_y);
-                var _speed = 40; 
+                
+                var _speed = 40; // Very fast dive
                 x += lengthdir_x(_speed, _dir);
                 y += lengthdir_y(_speed, _dir);
+                
                 if (_dist < _speed) {
                     vfx_state = 2;
-                    vfx_timer = 30; 
+                    vfx_timer = 30; // Wait at target briefly (optional)
                 }
             }
             break;
-        case 2: // Return Home
+            
+        case 2: // Return Home (Reset)
             x = home_x;
             y = home_y;
             vfx_type = "none";
@@ -443,7 +448,7 @@ else if (vfx_type == "yap") {
     }
     for (var i = array_length(vfx_particles) - 1; i >= 0; i--) {
         var _p = vfx_particles[i];
-        _p.scale += 0.1; 
+        _p.scale += 0.1; // Expand fast
         _p.life -= 1;
         if (_p.life <= 0) { array_delete(vfx_particles, i, 1); i--; }
     }
@@ -454,43 +459,46 @@ else if (vfx_type == "yap") {
 // --- ZOOMIES LOGIC ---
 else if (vfx_type == "zoomies") {
     if (vfx_timer > 0) {
-        var _shake = (sin(vfx_timer) * 30); 
+        var _shake = (sin(vfx_timer) * 30); // Oscillate
         x = home_x + _shake;
+        
+        // Spawn speed lines
         if (vfx_timer % 5 == 0) {
             var _h = sprite_get_height(sprite_index) * my_scale;
             var _new_particle = {
                 x: random_range(-30, 30), 
                 y: random_range(-_h, 0),
-                speed_x: -10, 
+                speed_x: -10, // Fly backward
                 life: 10,
                 max_life: 10
             };
             array_push(vfx_particles, _new_particle);
         }
     } else {
-        x = home_x; 
+        x = home_x; // Reset
     }
+    
     for (var i = array_length(vfx_particles) - 1; i >= 0; i--) {
         var _p = vfx_particles[i];
         _p.x += _p.speed_x;
         _p.life -= 1;
         if (_p.life <= 0) { array_delete(vfx_particles, i, 1); i--; }
     }
+    
     vfx_timer--;
     if (vfx_timer <= 0 && array_length(vfx_particles) == 0) vfx_type = "none";
 }
 
-// --- UPDATED: PUFF LOGIC (Impact Bursts) ---
+// --- PUFF LOGIC ---
 else if (vfx_type == "puff") {
-    if (vfx_timer % 5 == 0 && vfx_timer > 0) { // Bursts over time
+    if (vfx_timer % 5 == 0 && vfx_timer > 0) {
         var _h = sprite_get_height(sprite_index) * my_scale;
-        // Spawn burst at random locations on target body
         for (var k = 0; k < 3; k++) {
             var _new_particle = {
                 x: random_range(-30, 30), 
                 y: random_range(-_h * 0.8, -_h * 0.2),
                 scale: 0.2,
-                life: 20,
+                life: 20, 
                 max_life: 20
             };
             array_push(vfx_particles, _new_particle);
@@ -499,12 +507,73 @@ else if (vfx_type == "puff") {
     
     for (var i = array_length(vfx_particles) - 1; i >= 0; i--) {
         var _p = vfx_particles[i];
-        _p.scale += 0.05; // Rapidly expand
+        _p.scale += 0.05; 
         _p.life -= 1;
         if (_p.life <= 0) { array_delete(vfx_particles, i, 1); i--; }
     }
     vfx_timer--;
     if (vfx_timer <= 0 && array_length(vfx_particles) == 0) vfx_type = "none";
+}
+
+// --- BAMBOO LOGIC (Falling Stalks) ---
+else if (vfx_type == "bamboo") {
+    if (vfx_timer == 45) {
+        var _h = sprite_get_height(sprite_index) * my_scale;
+        for (var k = 0; k < 5; k++) {
+            var _new_particle = {
+                x: random_range(-30, 30), 
+                y: random_range(-_h, -20),
+                speed_y: random_range(2, 4),
+                angle: 0,
+                rot_speed: random_range(-5, 5),
+                life: 45, max_life: 45
+            };
+            array_push(vfx_particles, _new_particle);
+        }
+    }
+    for (var i = array_length(vfx_particles) - 1; i >= 0; i--) {
+        var _p = vfx_particles[i];
+        _p.y += _p.speed_y;
+        _p.angle += _p.rot_speed;
+        _p.life -= 1;
+        if (_p.life <= 0) { array_delete(vfx_particles, i, 1); i--; }
+    }
+    vfx_timer--; if (vfx_timer <= 0 && array_length(vfx_particles) == 0) vfx_type = "none";
+}
+
+// --- LAZY LOGIC (Blue Zs) ---
+else if (vfx_type == "lazy") {
+    if (vfx_timer % 20 == 0 && vfx_timer > 0) { 
+        var _h = sprite_get_height(sprite_index) * my_scale;
+        var _new_particle = {
+            x: random_range(-10, 10), 
+            y: -_h * 0.8, 
+            speed_x: 0.5, 
+            speed_y: -0.5, // Slower float than Sleep
+            life: 60, max_life: 60, scale: 1.0, 
+        };
+        array_push(vfx_particles, _new_particle);
+    }
+    for (var i = array_length(vfx_particles) - 1; i >= 0; i--) {
+        var _p = vfx_particles[i];
+        _p.x += _p.speed_x;
+        _p.y += _p.speed_y;
+        _p.scale += 0.005;
+        _p.life -= 1;
+        if (_p.life <= 0) { array_delete(vfx_particles, i, 1); i--; }
+    }
+    vfx_timer--; if (vfx_timer <= 0 && array_length(vfx_particles) == 0) vfx_type = "none";
+}
+
+// --- ROLL LOGIC (Rotation timer only) ---
+else if (vfx_type == "roll") {
+    vfx_timer++; // Count UP for rotation calculation
+    
+    // We check the 'lunge_state' variable (which is managed below) to know when to stop
+    if (lunge_state == 0) {
+        vfx_type = "none";
+        vfx_timer = 0;
+    }
 }
 
 // ========================================================
@@ -524,23 +593,29 @@ if (is_fainting) {
 } else {
     if (!variable_instance_exists(id, "lunge_speed")) lunge_speed = 0.1;
     
-    // ** FIX: Don't override position if diving or zooming **
+    // Don't override position if doing a complex movement like Dive or Zoomies
     if (vfx_type != "dive" && vfx_type != "zoomies") {
         switch (lunge_state) {
             case 1: // Lunge Forward
                 lunge_current_x = lerp(lunge_current_x, lunge_target_x - home_x, lunge_speed);
                 lunge_current_y = lerp(lunge_current_y, lunge_target_y - home_y, lunge_speed); 
-                if (abs(lunge_current_x - (lunge_target_x - home_x)) < 5) lunge_state = 2;
+                if (abs(lunge_current_x - (lunge_target_x - home_x)) < 5) { 
+                    lunge_state = 2;
+                }
                 break;
             case 2: // Return Home
                 lunge_current_x = lerp(lunge_current_x, 0, 0.1);
                 lunge_current_y = lerp(lunge_current_y, 0, 0.1); 
                 if (abs(lunge_current_x) < 1 && abs(lunge_current_y) < 1) {
-                    lunge_current_x = 0; lunge_current_y = 0; lunge_state = 0; lunge_speed = 0.1;
+                    lunge_current_x = 0;
+                    lunge_current_y = 0;
+                    lunge_state = 0;
+                    lunge_speed = 0.1; // Reset to default
                 }
                 break;
             default:
-                lunge_current_x = 0; lunge_current_y = 0;
+                lunge_current_x = 0;
+                lunge_current_y = 0;
                 break;
         }
         x = home_x + lunge_current_x;

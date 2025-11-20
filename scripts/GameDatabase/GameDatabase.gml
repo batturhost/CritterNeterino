@@ -7,7 +7,7 @@ function init_database() {
     // 1. DEFINE MOVES (The "Move Pool")
     // ========================================================================
     
-    // --- BASIC / SHARED (MUST BE GLOBAL FOR CHECKS) ---
+    // --- BASIC / SHARED ---
     global.GENERIC_MOVE_LUNGE = new MoveData("Lunge", 30, 100, "A basic physical lunge.", "A simple lunge.", MOVE_TYPE.DAMAGE);
     global.GENERIC_MOVE_AGITATE = new MoveData("Agitate", 0, 100, "The critter looks agitated.", "Lowers enemy defense.", MOVE_TYPE.STAT_DEBUFF, -1);
     global.MOVE_SYSTEM_CALL = new MoveData("System_Call", 0, 100, "Corrupts data. [RISKY]", "Applies 'Glitched' status.", MOVE_TYPE.STAT_BUFF, 99);
@@ -31,10 +31,9 @@ function init_database() {
     var m_gill      = new MoveData("Gill Slap", 40, 100, "A squishy slap.", "A quick physical attack.", MOVE_TYPE.DAMAGE);
     var m_mud       = new MoveData("Mud Shot", 20, 95, "Fling mud.", "Damage + Lowers Speed.", MOVE_TYPE.DAMAGE); 
 
-    // --- POMERANIAN (UPDATED) ---
+    // --- POMERANIAN ---
     var m_yap       = new MoveData("Yap", 0, 100, "An annoying bark.", "Lowers enemy attack.", MOVE_TYPE.STAT_DEBUFF, -1);
     var m_zoom      = new MoveData("Zoomies", 0, 100, "Runs in circles.", "Sharply raises speed.", MOVE_TYPE.STAT_BUFF, 2);
-    // REPLACED FLUFF PUFF WITH ATTACK
     var m_pom_strike = new MoveData("Pom-Pom Strike", 50, 100, "A fluffy barrage.", "Rapid strikes.", MOVE_TYPE.DAMAGE);
 
     // --- GECKO ---
@@ -47,9 +46,10 @@ function init_database() {
     var m_withdraw  = new MoveData("Withdraw", 0, 100, "Retracts into shell.", "Sharply raises defense.", MOVE_TYPE.STAT_BUFF, 2);
     var m_snap      = new MoveData("Snap", 40, 100, "A quick bite.", "A fast snapping attack.", MOVE_TYPE.DAMAGE);
 
-    // --- PANDA ---
-    var m_roll      = new MoveData("Playful Roll", 40, 100, "A clumsy roll.", "A strong physical attack.", MOVE_TYPE.DAMAGE);
-    var m_bamboo    = new MoveData("Bamboo Bite", 45, 100, "Chomp.", "A strong bite.", MOVE_TYPE.DAMAGE);
+    // --- PANDA (UPDATED) ---
+    var m_roll      = new MoveData("Playful Roll", 40, 100, "A clumsy roll.", "Rolls into the enemy.", MOVE_TYPE.DAMAGE);
+    var m_bamboo    = new MoveData("Bamboo Bite", 45, 100, "Chomp.", "A strong crunching bite.", MOVE_TYPE.DAMAGE);
+    var m_lazy      = new MoveData("Lazy Stance", 0, 100, "Slacks off.", "Raises Defense.", MOVE_TYPE.STAT_BUFF, 1);
     
     // --- CAT ---
     var m_scratch   = new MoveData("Scratch", 40, 100, "A fast scratch.", "High-speed attack.", MOVE_TYPE.DAMAGE);
@@ -62,7 +62,7 @@ function init_database() {
     var m_poison    = new MoveData("Poison Bite", 45, 100, "Venomous.", "Strong toxic attack.", MOVE_TYPE.DAMAGE);
     var m_coil      = new MoveData("Coil", 0, 100, "Tightens muscles.", "Raises Attack.", MOVE_TYPE.STAT_BUFF, 1);
     
-    // --- GENERIC FILLERS FOR OTHERS ---
+    // --- GENERIC FILLERS ---
     var m_tackle    = new MoveData("Tackle", 35, 100, "Full body slam.", "Physical damage.", MOVE_TYPE.DAMAGE);
     var m_growl     = new MoveData("Growl", 0, 100, "Intimidate.", "Lowers Attack.", MOVE_TYPE.STAT_DEBUFF, -1);
 
@@ -92,7 +92,7 @@ function init_database() {
         [ m_mud, m_regen, m_gill ], 
         "Neotenic salamander that regenerates limbs.", "Avg. Size: 0.2 kg");
 
-    // --- 5. Pomeranian (UPDATED) ---
+    // --- 5. Pomeranian ---
     global.bestiary.pomeranian = new AnimalData("Pomeranian", 70, 90, 60, 170, 5, spr_pomeranian_idle, spr_pomeranian_idle_back, spr_pomeranian_idle, 
         [ m_yap, m_zoom, m_pom_strike ], 
         "Small dog with a fluffy coat.", "Avg. Size: 2.5 kg");
@@ -107,9 +107,9 @@ function init_database() {
         [ m_shell, m_withdraw, m_snap ], 
         "Turtle with a hinged domed shell.", "Avg. Size: 0.5 kg");
         
-    // --- 8. Panda ---
+    // --- 8. Panda (UPDATED) ---
     global.bestiary.panda = new AnimalData("Panda", 160, 90, 120, 40, 5, spr_panda_idle, spr_panda_idle_back, spr_panda_idle, 
-        [ global.GENERIC_MOVE_LUNGE, m_bamboo, m_roll ], 
+        [ m_roll, m_bamboo, m_lazy ], 
         "Large bear native to China.", "Avg. Size: 100 kg");
         
     // --- 9. Cat ---

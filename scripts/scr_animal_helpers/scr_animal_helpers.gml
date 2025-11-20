@@ -1,24 +1,20 @@
 // --- scr_animal_helpers ---
 // This script holds our "actor" functions
 
-// --- ANIMAL INITIALIZER ---
+// ... (Keep existing Init/Hurt/Lunge/Stat functions) ...
 function init_animal(_animal_object, _data, _sprite_to_use) {
     _animal_object.my_data = _data;
     _animal_object.sprite_index = _sprite_to_use;
-    
-    // Set its "home" position
     _animal_object.home_x = _animal_object.x;
     _animal_object.home_y = _animal_object.y;
 }
 
-// --- HURT EFFECT ---
 function effect_play_hurt(_actor_object) {
     _actor_object.flash_alpha = 1.0;
     _actor_object.flash_color = c_white;
     _actor_object.shake_timer = 15;
 }
 
-// --- LUNGE EFFECT ---
 function effect_play_lunge(_actor_object, _target_actor) {
     _actor_object.lunge_state = 1;
     var _target_x = _actor_object.home_x + ((_target_actor.x - _actor_object.x) * 0.66);
@@ -28,7 +24,6 @@ function effect_play_lunge(_actor_object, _target_actor) {
     _actor_object.lunge_speed = 0.1; 
 }
 
-// --- BITE LUNGE ---
 function effect_play_bite_lunge(_actor_object, _target_actor) {
     _actor_object.lunge_state = 1;
     var _target_x = _actor_object.home_x + ((_target_actor.x - _actor_object.x) * 0.85); 
@@ -38,14 +33,12 @@ function effect_play_bite_lunge(_actor_object, _target_actor) {
     _actor_object.lunge_speed = 0.25; 
 }
 
-// --- HEAL FLASH EFFECT ---
 function effect_play_heal_flash(_actor_object) {
     _actor_object.flash_alpha = 1.0;
     _actor_object.flash_color = c_lime;
     _actor_object.shake_timer = 0;
 }
 
-// --- STAT FLASH EFFECT ---
 function effect_play_stat_flash(_actor_object, _type = "debuff") {
     _actor_object.flash_alpha = 1.0;
     _actor_object.shake_timer = 0;
@@ -56,12 +49,9 @@ function effect_play_stat_flash(_actor_object, _type = "debuff") {
     }
 }
 
-// --- CHECK HEALTHY CRITTERS ---
 function player_has_healthy_critters() {
     for (var i = 0; i < array_length(global.PlayerData.team); i++) {
-        if (global.PlayerData.team[i].hp > 0) {
-            return true;
-        }
+        if (global.PlayerData.team[i].hp > 0) return true;
     }
     return false;
 }
@@ -87,17 +77,34 @@ function effect_play_slap(_actor_object) { _actor_object.vfx_type = "slap"; _act
 function effect_play_dive(_actor_object, _target) { _actor_object.vfx_type = "dive"; _actor_object.vfx_particles = []; _actor_object.vfx_timer = 0; _actor_object.vfx_state = 0; _actor_object.vfx_target_x = _target.x; _actor_object.vfx_target_y = _target.y; }
 function effect_play_yap(_actor_object) { _actor_object.vfx_type = "yap"; _actor_object.vfx_particles = []; _actor_object.vfx_timer = 45; }
 function effect_play_zoomies(_actor_object) { _actor_object.vfx_type = "zoomies"; _actor_object.vfx_particles = []; _actor_object.vfx_timer = 60; }
+function effect_play_puff(_actor_object) { _actor_object.vfx_type = "puff"; _actor_object.vfx_particles = []; _actor_object.vfx_timer = 60; }
 
-// --- NEW: POM-POM STRIKE (Puff Impact) ---
-// This reuses "puff" logic but we will apply it to the enemy to show impact
-function effect_play_puff(_actor_object) {
-    _actor_object.vfx_type = "puff";
+// --- NEW: BAMBOO (Green sticks) ---
+function effect_play_bamboo(_actor_object) {
+    _actor_object.vfx_type = "bamboo";
     _actor_object.vfx_particles = [];
-    _actor_object.vfx_timer = 30; // Fast bursts
+    _actor_object.vfx_timer = 45;
+}
+
+// --- NEW: LAZY (Blue Zs + Slow) ---
+function effect_play_lazy(_actor_object) {
+    _actor_object.vfx_type = "lazy";
+    _actor_object.vfx_particles = [];
+    _actor_object.vfx_timer = 60;
+}
+
+// --- NEW: ROLL (Rotation + Lunge) ---
+function effect_play_roll(_actor_object, _target_actor) {
+    // Trigger the physical movement
+    effect_play_lunge(_actor_object, _target_actor);
+    
+    // Trigger the Rotation VFX logic
+    _actor_object.vfx_type = "roll";
+    _actor_object.vfx_particles = [];
+    _actor_object.vfx_timer = 0; // Used to count up for rotation
 }
 
 // --- BATCH UPDATE: SIMPLE VFX ---
-// These act as aliases for existing effects or simple color flashes
 function effect_play_scratch(_actor) { effect_play_lunge(_actor, _actor); _actor.flash_alpha=1.0; _actor.flash_color = c_white; }
 function effect_play_dust(_actor) { effect_play_puff(_actor); } 
 function effect_play_poison(_actor) { effect_play_bite(_actor); _actor.flash_color = c_purple; }
