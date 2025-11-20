@@ -4,13 +4,16 @@
 event_inherited();
 
 // 2. Window Properties
-window_width = 960;
-window_height = 720;
+window_width = 800;
+window_height = 600;
 window_title = "CNet_Battle_Sys.exe - [ACTIVE]";
 
 // Recalculate Center
 window_x1 = (display_get_gui_width() / 2) - (window_width / 2);
-window_y1 = (display_get_gui_height() / 2) - (window_height / 2);
+
+// FIX: Subtract 20 (or desired amount) to move the window up
+window_y1 = (display_get_gui_height() / 2) - (window_height / 2) - 20; 
+
 window_x2 = window_x1 + window_width;
 window_y2 = window_y1 + window_height;
 
