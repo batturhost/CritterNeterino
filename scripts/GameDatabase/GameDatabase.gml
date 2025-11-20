@@ -17,12 +17,8 @@ function init_database() {
     // --- 2. DEFINE OUR BESTIARY ---
     global.bestiary = {};
 
-    // --- 3. ADD THE ARCTIC FOX (POLISHED) ---
-    // Archetype: Speedster / Glass Cannon
-    
-    // Signature Move: Renamed to fit UI
+    // --- 3. ADD THE ARCTIC FOX ---
     var move_glacial_pounce = new MoveData("Ice Pounce", 55, 95, "A freezing leap.", "Deals massive damage.", MOVE_TYPE.DAMAGE);
-    // Utility Move: Raises Defense
     var move_snow_cloak = new MoveData("Snow Cloak", 0, 100, "Hides in snow.", "Raises user's defense.", MOVE_TYPE.STAT_BUFF);
 
     global.bestiary.arctic_fox = new AnimalData(
@@ -32,23 +28,15 @@ function init_database() {
         spr_arctic_fox_idle_back, // Idle sprite (Back)
         spr_arctic_fox_idle,      // Signature move
         [ global.GENERIC_MOVE_LUNGE, move_snow_cloak, move_glacial_pounce ],
-        "Native to the Arctic regions of the Northern Hemisphere. Its thick fur turns white in winter for perfect camouflage.", // Real-world fact
+        "Native to the Arctic regions of the Northern Hemisphere. Its thick fur turns white in winter for perfect camouflage.",
         "Avg. Size: 3.5 kg" 
     );
 
-    // --- 4. ADD THE CAPYBARA (UPDATED) ---
-    
-    // Move 1: Healing (Signature) - "Take a Nap" with Sleep VFX
+    // --- 4. ADD THE CAPYBARA ---
     var move_take_nap = new MoveData("Take a Nap", 0, 100, "Heals 50 HP.", "Restores a small amount of HP.", 
         MOVE_TYPE.HEAL, 50);
-        
-    // Move 2: Damage (Water Themed) - "Hydro Headbutt" with Bubble VFX
-    // Capy has low ATK (10), so we give this decent base power to compensate.
     var move_hydro_headbutt = new MoveData("Hydro Headbutt", 45, 100, "A wet headbutt.", "Deals water damage.", 
         MOVE_TYPE.DAMAGE);
-        
-    // Move 3: Buff (Tank Themed) - "Zen Barrier" with Ring VFX
-    // Leans into its high Defense stat (140).
     var move_zen_barrier = new MoveData("Zen Barrier", 0, 100, "Meditates calmly.", "Raises user's defense.", 
         MOVE_TYPE.STAT_BUFF, 1);
 
@@ -63,17 +51,11 @@ function init_database() {
         "Avg. Size: 45 kg" // Size
     );
 
-    // --- 5. ADD THE GOOSE (UPDATED) ---
-    
-    // Move 1: Debuff (Defense) - Signature
+    // --- 5. ADD THE GOOSE ---
     var move_honk = new MoveData("HONK", 0, 100, "A terrifying noise.", "Lowers enemy defense.",
         MOVE_TYPE.STAT_DEBUFF, -1);
-        
-    // Move 2: Damage (Flying/Physical)
     var move_wing_smack = new MoveData("Wing Smack", 45, 100, "A violent flap.", "Strikes with powerful wings.",
         MOVE_TYPE.DAMAGE);
-        
-    // Move 3: Debuff (Attack) - Intimidation
     var move_hiss = new MoveData("Hiss", 0, 100, "An angry hiss.", "Lowers enemy attack.",
         MOVE_TYPE.STAT_DEBUFF, -1);
         
@@ -88,18 +70,89 @@ function init_database() {
         "Avg. Size: 4.0 kg" // Size
     );
 
-    // --- 6. ADD THE AXOLOTL ---
-    var move_sig_axolotl = new MoveData("Regenerate", 0, 100, "Heals 50 HP.", "Restores a small amount of HP.", MOVE_TYPE.HEAL, 50);
+    // --- GameDatabase Script ---
+// This function will build our entire Bestiary
+
+function init_database() {
+    
+    // --- 1. DEFINE SHARED MOVES ---
+    
+    global.GENERIC_MOVE_LUNGE = new MoveData("Lunge", 30, 100, "A basic physical lunge.", "A simple lunge.", 
+        MOVE_TYPE.DAMAGE);
+    global.GENERIC_MOVE_AGITATE = new MoveData("Agitate", 0, 100, "The critter looks agitated.", "Lowers enemy defense.", 
+        MOVE_TYPE.STAT_DEBUFF, -1); 
+
+    global.MOVE_SYSTEM_CALL = new MoveData("System_Call", 0, 100, "Corrupts data. [RISKY]", "Applies 'Glitched' status for 3 turns.",
+        MOVE_TYPE.STAT_BUFF, 99); 
+
+
+    // --- 2. DEFINE OUR BESTIARY ---
+    global.bestiary = {};
+
+    // ... (Previous entries for Fox, Capybara, Goose, etc. remain unchanged) ...
+    // Note: For brevity in this chat message, I'm focusing on the changes.
+    // Assume standard entries for Arctic Fox, Capybara, Goose are here.
+    
+    // --- 3. ADD THE ARCTIC FOX ---
+    var move_glacial_pounce = new MoveData("Ice Pounce", 55, 95, "A freezing leap.", "Deals massive damage.", MOVE_TYPE.DAMAGE);
+    var move_snow_cloak = new MoveData("Snow Cloak", 0, 100, "Hides in snow.", "Raises user's defense.", MOVE_TYPE.STAT_BUFF);
+    global.bestiary.arctic_fox = new AnimalData("Arctic Fox", 75, 115, 60, 145, 5, spr_arctic_fox_idle, spr_arctic_fox_idle_back, spr_arctic_fox_idle, [ global.GENERIC_MOVE_LUNGE, move_snow_cloak, move_glacial_pounce ], "Native to the Arctic regions...", "Avg. Size: 3.5 kg");
+
+    // --- 4. ADD THE CAPYBARA ---
+    var move_take_nap = new MoveData("Take a Nap", 0, 100, "Heals 50 HP.", "Restores HP.", MOVE_TYPE.HEAL, 50);
+    var move_hydro_headbutt = new MoveData("Hydro Headbutt", 45, 100, "A wet headbutt.", "Deals water damage.", MOVE_TYPE.DAMAGE);
+    var move_zen_barrier = new MoveData("Zen Barrier", 0, 100, "Meditates calmly.", "Raises defense.", MOVE_TYPE.STAT_BUFF, 1);
+    global.bestiary.capybara = new AnimalData("Capybara", 190, 10, 140, 20, 5, spr_capybara_idle, spr_capybara_idle_back, spr_capybara_idle, [ move_hydro_headbutt, move_zen_barrier, move_take_nap ], "A large, semi-aquatic rodent...", "Avg. Size: 45 kg");
+
+    // --- 5. ADD THE GOOSE ---
+    var move_honk = new MoveData("HONK", 0, 100, "A terrifying noise.", "Lowers enemy defense.", MOVE_TYPE.STAT_DEBUFF, -1);
+    var move_wing_smack = new MoveData("Wing Smack", 45, 100, "A violent flap.", "Strikes with powerful wings.", MOVE_TYPE.DAMAGE);
+    var move_hiss = new MoveData("Hiss", 0, 100, "An angry hiss.", "Lowers enemy attack.", MOVE_TYPE.STAT_DEBUFF, -1);
+    global.bestiary.goose = new AnimalData("Goose", 100, 70, 70, 70, 5, spr_goose_idle, spr_goose_idle_back, spr_goose_idle, [ move_wing_smack, move_hiss, move_honk ], "A large waterfowl...", "Avg. Size: 4.0 kg");
+
+    // --- 6. ADD THE AXOLOTL (UPDATED) ---
+    
+    // Move 1: Healing - Regenerate
+    var move_regenerate = new MoveData("Regenerate", 0, 100, "Regrows cells.", "Heals 50 HP.", 
+        MOVE_TYPE.HEAL, 50);
+        
+    // Move 2: Damage - Gill Slap
+    var move_gill_slap = new MoveData("Gill Slap", 40, 100, "A squishy slap.", "A quick physical attack.", 
+        MOVE_TYPE.DAMAGE);
+        
+    // Move 3: Damage + Debuff - Mud Shot
+    // Note: Since we don't have a specific "Damage+Debuff" type yet, we'll treating it as DAMAGE in the constructor
+    // and handle the side effect in the Battle Manager logic.
+    var move_mud_shot = new MoveData("Mud Shot", 20, 95, "Fling mud.", "Damage + Lowers Speed.", 
+        MOVE_TYPE.DAMAGE); 
+
     global.bestiary.axolotl = new AnimalData(
         "Axolotl",
         150, 50, 100, 40, 5, // Defensive/Healer
         spr_axolotl_idle, 
         spr_axolotl_idle_back, 
         spr_axolotl_idle, 
-        [global.GENERIC_MOVE_LUNGE, move_sig_axolotl, global.GENERIC_MOVE_AGITATE], 
+        [ move_mud_shot, move_regenerate, move_gill_slap ], 
         "A neotenic salamander. It is known for its ability to regenerate limbs.", 
         "Avg. Size: 0.2 kg"
     );
+    
+    // ... (The rest of the database remains as is for now) ...
+    // --- 7. ADD THE PANDA ---
+    var move_sig_panda = new MoveData("Playful Roll", 40, 100, "A clumsy, adorable roll.", "A strong physical attack.", MOVE_TYPE.DAMAGE);
+    global.bestiary.panda = new AnimalData("Panda", 160, 90, 120, 40, 5, spr_panda_idle, spr_panda_idle_back, spr_panda_idle, [global.GENERIC_MOVE_LUNGE, global.GENERIC_MOVE_AGITATE, move_sig_panda], "A large bear...", "Avg. Size: 100 kg");
+
+    // --- 8. ADD THE BOX TURTLE ---
+    var move_shell_bash = new MoveData("Shell Bash", 50, 100, "Rams with shell.", "A heavy physical strike.", MOVE_TYPE.DAMAGE);
+    var move_withdraw = new MoveData("Withdraw", 0, 100, "Retracts into shell.", "Sharply raises defense.", MOVE_TYPE.STAT_BUFF, 2);
+    var move_turtle_snap = new MoveData("Snap", 40, 100, "A quick bite.", "A fast snapping attack.", MOVE_TYPE.DAMAGE);
+    global.bestiary.box_turtle = new AnimalData("Box Turtle", 120, 40, 200, 20, 5, spr_box_turtle_idle, spr_box_turtle_idle_back, spr_box_turtle_idle, [ move_shell_bash, move_withdraw, move_turtle_snap ], "A turtle with a domed shell...", "Avg. Size: 0.5 kg");
+
+    // ... (Keep remaining entries standard) ...
+    // For safety, I'll skip pasting the rest of the unmodified list to save space, 
+    // but in your file, ensure the rest of the critters (Cat, Chinchilla, etc.) are still there!
+    // If you need the full list again, let me know.
+}
 
     // --- 7. ADD THE PANDA ---
     var move_sig_panda = new MoveData("Playful Roll", 40, 100, "A clumsy, adorable roll.", "A strong physical attack.", MOVE_TYPE.DAMAGE);
@@ -114,15 +167,27 @@ function init_database() {
         "Avg. Size: 100 kg"
     );
 
-    // --- 8. ADD THE BOX TURTLE ---
-    var move_sig_box_turtle = new MoveData("Withdraw", 0, 100, "Hides in its shell.", "Sharply raises user's defense.", MOVE_TYPE.STAT_BUFF, 2);
+    // --- 8. ADD THE BOX TURTLE (FIXED) ---
+    
+    // Move 1: Damage - Shell Bash
+    var move_shell_bash = new MoveData("Shell Bash", 50, 100, "Rams with shell.", "A heavy physical strike.", 
+        MOVE_TYPE.DAMAGE);
+        
+    // Move 2: Buff - Withdraw
+    var move_withdraw = new MoveData("Withdraw", 0, 100, "Retracts into shell.", "Sharply raises defense.", 
+        MOVE_TYPE.STAT_BUFF, 2); // +2 Defense
+        
+    // Move 3: Damage - Snap (RENAMED VARIABLE TO FIX CRASH)
+    var move_turtle_snap = new MoveData("Snap", 40, 100, "A quick bite.", "A fast snapping attack.", 
+        MOVE_TYPE.DAMAGE);
+    
     global.bestiary.box_turtle = new AnimalData(
         "Box Turtle",
         120, 40, 200, 20, 5, // Super Tank
         spr_box_turtle_idle, 
         spr_box_turtle_idle_back, 
         spr_box_turtle_idle, 
-        [global.GENERIC_MOVE_LUNGE, move_sig_box_turtle, global.GENERIC_MOVE_AGITATE], 
+        [ move_shell_bash, move_withdraw, move_turtle_snap ], 
         "A turtle with a domed shell that is hinged, allowing it to close completely.", 
         "Avg. Size: 0.5 kg"
     );
@@ -167,14 +232,20 @@ function init_database() {
     );
 
     // --- 12. ADD THE GECKO ---
-    var move_sig_gecko = new MoveData("Wall Climb", 0, 100, "Climbs the screen.", "Raises user's speed.", MOVE_TYPE.STAT_BUFF, 1);
+    var move_sticky_tongue = new MoveData("Sticky Tongue", 40, 100, "A long lash.", "A fast strike with a tongue.", 
+        MOVE_TYPE.DAMAGE);
+    var move_wall_climb = new MoveData("Wall Climb", 0, 100, "Climbs the screen.", "Raises user's speed.", 
+        MOVE_TYPE.STAT_BUFF, 1); 
+    var move_tail_shed = new MoveData("Tail Shed", 0, 100, "Drops its tail.", "Sharply raises defense.", 
+        MOVE_TYPE.STAT_BUFF, 2); 
+    
     global.bestiary.gecko = new AnimalData(
         "Gecko",
         80, 70, 70, 160, 5, // Speedy
         spr_gecko_idle, 
         spr_gecko_idle_back, 
         spr_gecko_idle, 
-        [global.GENERIC_MOVE_LUNGE, move_sig_gecko, global.GENERIC_MOVE_AGITATE], 
+        [ move_sticky_tongue, move_wall_climb, move_tail_shed ], 
         "A small lizard known for its specialized toe pads that allow it to climb.", 
         "Avg. Size: 0.05 kg"
     );

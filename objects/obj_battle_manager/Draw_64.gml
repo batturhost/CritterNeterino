@@ -170,7 +170,7 @@ else
             }
             draw_set_alpha(1.0);
         }
-        else if (_actor.vfx_type == "soundwave") { // --- NEW: Soundwave ---
+        else if (_actor.vfx_type == "soundwave") { // --- Soundwave ---
             for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
                 var _p = _actor.vfx_particles[i];
                 var _px = _actor.x + _p.x;
@@ -182,7 +182,7 @@ else
             }
             draw_set_alpha(1.0);
         }
-        else if (_actor.vfx_type == "feathers") { // --- NEW: Feathers ---
+        else if (_actor.vfx_type == "feathers") { // --- Feathers ---
             for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
                 var _p = _actor.vfx_particles[i];
                 var _px = _actor.x + _p.x;
@@ -190,22 +190,89 @@ else
                 var _alpha = _p.life / _p.max_life;
                 draw_set_alpha(_alpha);
                 draw_set_color(c_white);
-                // Draw tiny ellipses to look like feathers
                 draw_ellipse(_px - 3, _py - 5, _px + 3, _py + 5, false);
             }
             draw_set_alpha(1.0);
         }
-        else if (_actor.vfx_type == "angry") { // --- NEW: Angry Symbol ---
+        else if (_actor.vfx_type == "angry") { // --- Angry Symbol ---
             draw_set_font(fnt_vga_bold);
             draw_set_color(c_red);
             for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
                 var _p = _actor.vfx_particles[i];
                 var _px = _actor.x + _p.x;
                 var _py = _actor.y - _y_offset + _p.y;
-                draw_text(_px, _py, "#!@"); // Angry symbols
+                draw_text(_px, _py, "#!@"); 
             }
             draw_set_font(fnt_vga);
             draw_set_color(c_white);
+        }
+        else if (_actor.vfx_type == "tongue") { // --- Tongue ---
+            if (array_length(_actor.vfx_particles) > 0) {
+                var _p = _actor.vfx_particles[0];
+                var _px = _actor.x + _p.x;
+                var _py = _actor.y - _y_offset + _p.y;
+                draw_set_color(c_fuchsia); // Pink tongue
+                draw_line_width(_px, _py, _px + _p.length, _py, 4);
+            }
+            draw_set_color(c_white);
+        }
+        else if (_actor.vfx_type == "up_arrow") { // --- Up Arrows ---
+            draw_set_font(fnt_vga_bold);
+            draw_set_color(c_lime);
+            for (var i = 0; i < array_length(_actor.vfx_particles); i++) {
+                var _p = _actor.vfx_particles[i];
+                var _px = _actor.x + _p.x;
+                var _py = _actor.y - _y_offset + _p.y;
+                draw_text(_px, _py, "^"); 
+            }
+            draw_set_font(fnt_vga);
+            draw_set_color(c_white);
+        }
+        else if (_actor.vfx_type == "tail_shed") { // --- Tail Drop ---
+             if (array_length(_actor.vfx_particles) > 0) {
+                var _p = _actor.vfx_particles[0];
+                var _px = _actor.x + _p.x;
+                var _py = _actor.y - _y_offset + _p.y;
+                draw_set_color(c_gray); 
+                draw_rectangle_95(_px - 5, _py - 5, _px + 5, _py + 5, "raised"); 
+                draw_set_color(c_white);
+            }
+        }
+        // --- NEW: SHIELD (Withdraw - UPDATED VISUALS) ---
+        else if (_actor.vfx_type == "shield") {
+             var _h = sprite_get_height(_actor.sprite_index) * _actor.my_scale;
+             var _w = sprite_get_width(_actor.sprite_index) * _actor.my_scale;
+             
+             // Draw semi-transparent Aqua background
+             draw_set_color(c_aqua);
+             draw_set_alpha(0.4);
+             draw_roundrect(_actor.x - _w/2 - 10, _actor.y - _h - 10, _actor.x + _w/2 + 10, _actor.y + 10, false);
+             
+             // Draw White border
+             draw_set_alpha(1.0);
+             draw_set_color(c_white);
+             draw_roundrect(_actor.x - _w/2 - 10, _actor.y - _h - 10, _actor.x + _w/2 + 10, _actor.y + 10, true);
+        }
+        // --- NEW: SHOCKWAVE (Shell Bash) ---
+        else if (_actor.vfx_type == "shockwave") {
+            if (array_length(_actor.vfx_particles) > 0) {
+                var _p = _actor.vfx_particles[0];
+                var _px = _actor.x + _p.x;
+                var _py = _actor.y - _y_offset + _p.y;
+                draw_set_color(c_white);
+                draw_circle(_px, _py, 150 * _p.scale, true); // Large ring
+                draw_circle(_px, _py, 140 * _p.scale, true);
+            }
+        }
+        // --- NEW: BITE MARK (Snap) ---
+        else if (_actor.vfx_type == "bite") {
+            var _h = sprite_get_height(_actor.sprite_index) * _actor.my_scale;
+            var _px = _actor.x;
+            var _py = _actor.y - _y_offset - (_h/2);
+            draw_set_color(c_white);
+            // Draw jagged teeth
+            draw_triangle(_px - 20, _py - 20, _px, _py, _px - 10, _py - 20, false);
+            draw_triangle(_px + 20, _py + 20, _px, _py, _px + 10, _py + 20, false);
         }
     };
 
@@ -218,6 +285,9 @@ else
         var _e_x = enemy_actor.x; var _e_y = enemy_actor.y; 
         var _e_frame = enemy_actor.animation_frame; var _e_alpha = enemy_actor.faint_alpha;
         var _e_y_scale = enemy_actor.faint_scale_y;
+        
+        // --- WITHDRAW FADE LOGIC ---
+        if (enemy_actor.vfx_type == "shield") _e_alpha *= 0.2; // Fade out
         
         // Shadow
         draw_set_color(c_black); draw_set_alpha(0.3 * _e_alpha);
@@ -250,6 +320,9 @@ else
         var _p_x = player_actor.x; var _p_y = player_actor.y; 
         var _p_frame = player_actor.animation_frame; var _p_alpha = player_actor.faint_alpha;
         var _p_y_scale = player_actor.faint_scale_y;
+        
+        // --- WITHDRAW FADE LOGIC ---
+        if (player_actor.vfx_type == "shield") _p_alpha *= 0.2; // Fade out
         
         // Shadow
         draw_set_color(c_black); draw_set_alpha(0.3 * _p_alpha);
