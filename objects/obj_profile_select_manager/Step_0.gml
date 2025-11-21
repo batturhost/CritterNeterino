@@ -11,14 +11,27 @@ var _click = mouse_check_button_pressed(mb_left);
 window_x2 = window_x1 + window_width;
 window_y2 = window_y1 + window_height;
 
-grid_x1 = window_x1 + (window_width - grid_w) / 2;
-grid_y1 = window_y1 + 80;
+grid_x1 = window_x1 + 30;
+// [FIX] Match Create event position
+grid_y1 = window_y1 + 110;
 
-// [FIX] Ensure button stays well below grid
-btn_ok_x1 = window_x1 + (window_width / 2) - (btn_ok_w / 2);
-btn_ok_y1 = grid_y1 + grid_h + 60; // Increased padding
+// Footer Buttons
+btn_cancel_x1 = window_x2 - 20 - btn_ok_w;
+btn_cancel_y1 = window_y2 - 45;
+btn_cancel_x2 = btn_cancel_x1 + btn_ok_w;
+btn_cancel_y2 = btn_cancel_y1 + btn_ok_h;
+
+btn_ok_x1 = btn_cancel_x1 - 10 - btn_ok_w;
+btn_ok_y1 = btn_cancel_y1;
 btn_ok_x2 = btn_ok_x1 + btn_ok_w;
 btn_ok_y2 = btn_ok_y1 + btn_ok_h;
+
+// Preview Position
+preview_x1 = window_x2 - 200;
+preview_y1 = grid_y1;
+preview_x2 = preview_x1 + preview_box_size;
+preview_y2 = preview_y1 + preview_box_size;
+
 
 // 3. Grid Interaction
 hover_index = -1;
@@ -46,14 +59,20 @@ if (!is_dragging) {
         }
     }
     
-    // 4. OK Button Logic
+    // 4. Button Logic
     btn_ok_hover = point_in_rectangle(_mx, _my, btn_ok_x1, btn_ok_y1, btn_ok_x2, btn_ok_y2);
+    btn_cancel_hover = point_in_rectangle(_mx, _my, btn_cancel_x1, btn_cancel_y1, btn_cancel_x2, btn_cancel_y2);
     
-    if (_click && btn_ok_hover) {
-        // SAVE AVATAR
-        global.PlayerData.profile_pic = avatar_list[selected_index];
-        
-        // GO TO HUB
-        room_goto(rm_hub);
+    if (_click) {
+        if (btn_ok_hover) {
+            // SAVE & FINISH
+            global.PlayerData.profile_pic = avatar_list[selected_index];
+            room_goto(rm_hub);
+        }
+        if (btn_cancel_hover) {
+            // CANCEL (Maybe just go to hub without saving, or stay here?)
+            // For flow continuity, let's just go to hub with default/previous
+            room_goto(rm_hub);
+        }
     }
 }

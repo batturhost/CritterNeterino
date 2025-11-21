@@ -3,15 +3,19 @@
 // 1. INHERIT PARENT
 event_inherited();
 
-// FIX: Explicitly initialize is_dragging to prevent crash if parent init fails or lags
 if (!variable_instance_exists(id, "is_dragging")) {
     is_dragging = false;
 }
 
+// Initialize color variables explicitly
+if (!variable_instance_exists(id, "col_bg")) col_bg = c_teal;
+if (!variable_instance_exists(id, "col_title_bar_active")) col_title_bar_active = c_navy;
+if (!variable_instance_exists(id, "col_title_bar_inactive")) col_title_bar_inactive = c_dkgray;
+
 // 2. Window Properties
-window_width = 500;
-window_height = 550; // [FIX] Increased further from 520 to 550
-window_title = "User Profile Setup";
+window_width = 600;
+window_height = 480; // Adjusted height
+window_title = "Picture";
 
 // Recalculate Position
 window_x1 = (display_get_gui_width() / 2) - (window_width / 2);
@@ -21,40 +25,57 @@ window_y2 = window_y1 + window_height;
 
 // 3. Avatar List
 avatar_list = [
-    spr_avatar_user_default, 
-    spr_avatar_user_01, 
-    spr_avatar_user_02, 
-    spr_avatar_user_03,
-    spr_avatar_user_default, 
-    spr_avatar_user_01, 
-    spr_avatar_user_02, 
-    spr_avatar_user_03,
-    spr_avatar_user_default 
+    spr_avatar_user_default, spr_avatar_user_01, spr_avatar_user_02, spr_avatar_user_03,
+    spr_avatar_user_01, spr_avatar_user_02, spr_avatar_user_03, spr_avatar_user_default,
+    spr_avatar_user_02, spr_avatar_user_03, spr_avatar_user_default, spr_avatar_user_01,
+    spr_avatar_user_03, spr_avatar_user_default, spr_avatar_user_01, spr_avatar_user_02
 ];
 
-// 4. Grid Layout
-grid_cols = 3;
-grid_rows = 3;
-cell_size = 100;
-grid_padding = 20;
+// 4. Grid Layout (Left Side)
+cell_size = 60; 
+grid_padding = 8;
+grid_cols = 4; 
+grid_rows = 4;
 
-// Calculate Grid Start Position (Centered in Window)
 grid_w = (grid_cols * cell_size) + ((grid_cols - 1) * grid_padding);
 grid_h = (grid_rows * cell_size) + ((grid_rows - 1) * grid_padding);
 
-grid_x1 = window_x1 + (window_width - grid_w) / 2;
-grid_y1 = window_y1 + 80; 
+grid_x1 = window_x1 + 30;
+// [FIX] Moved UP significantly (was +140, now +100 relative to window start, accounting for header)
+// Header starts at +32, text takes ~50px. Grid starts below that.
+grid_y1 = window_y1 + 110; 
 
-// 5. Selection State
-selected_index = 0;
-hover_index = -1;
+// 5. Preview Layout (Right Side)
+preview_box_size = 140;
+preview_x1 = window_x2 - 200; // Right aligned
+preview_y1 = grid_y1;
+preview_x2 = preview_x1 + preview_box_size;
+preview_y2 = preview_y1 + preview_box_size;
 
-// 6. OK Button
-btn_ok_w = 120;
-btn_ok_h = 35;
-btn_ok_x1 = window_x1 + (window_width / 2) - (btn_ok_w / 2);
-// [FIX] Position relative to grid bottom with more padding (+60 instead of +40)
-btn_ok_y1 = grid_y1 + grid_h + 60; 
+// 6. Buttons (Right Side & Bottom)
+// Mock buttons
+btn_mock_w = 140;
+btn_mock_h = 24;
+btn_mock_x = preview_x1;
+btn_mock_start_y = preview_y2 + 20;
+
+// Real OK/Cancel buttons (Bottom Right)
+btn_ok_w = 80;
+btn_ok_h = 26;
+
+// Position at bottom right corner
+btn_cancel_x1 = window_x2 - 20 - btn_ok_w;
+btn_cancel_y1 = window_y2 - 45;
+btn_cancel_x2 = btn_cancel_x1 + btn_ok_w;
+btn_cancel_y2 = btn_cancel_y1 + btn_ok_h;
+btn_cancel_hover = false;
+
+btn_ok_x1 = btn_cancel_x1 - 10 - btn_ok_w;
+btn_ok_y1 = btn_cancel_y1;
 btn_ok_x2 = btn_ok_x1 + btn_ok_w;
 btn_ok_y2 = btn_ok_y1 + btn_ok_h;
 btn_ok_hover = false;
+
+// 7. State
+selected_index = 0;
+hover_index = -1;
