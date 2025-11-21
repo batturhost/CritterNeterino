@@ -155,7 +155,7 @@ download_bar_y1 = window_y1 + (window_height / 2);
 // ================== NEW: HP SLIDE VARIABLES ==================
 player_visual_hp = player_critter_data.hp;
 enemy_visual_hp = enemy_critter_data.hp;
-hp_drain_speed = 0.0; // Pixels per frame (or HP points per frame)
+hp_drain_speed = 0.5; // Pixels per frame (or HP points per frame)
 next_state_after_drain = BATTLE_STATE.WAIT_FOR_PLAYER_MOVE; // Where to go after drain finishes
 // =============================================================
 
@@ -216,7 +216,11 @@ perform_turn_logic = function(_user_actor, _target_actor, _user_data, _target_da
             var D = _target_data.defense * _def_mult;
             var P = _move.atk;
             
-            var _damage = floor( ( ( ( (2 * L / 5) + 2 ) * P * (A / D) ) / 50 ) + 2 );
+            // --- UPDATED DAMAGE FORMULA ---
+            // Divisor changed from 50 to 35 for ~40% more damage
+            var _damage = floor( ( ( ( (2 * L / 5) + 2 ) * P * (A / D) ) / 35 ) + 2 );
+            
+            // Apply Type Multiplier
             _damage = floor(_damage * _type_mult);
             
             _target_data.hp = max(0, _target_data.hp - _damage);
@@ -225,6 +229,7 @@ perform_turn_logic = function(_user_actor, _target_actor, _user_data, _target_da
             if (_type_mult > 1.0) battle_log_text += " It's super effective!";
             if (_type_mult < 1.0) battle_log_text += " It's not very effective...";
 
+            // Secondary Effects
             if (_move.move_name == "Mud Shot") {
                 _target_data.spd_stage = clamp(_target_data.spd_stage - 1, -6, 6);
                 battle_log_text = "Mud Shot hit! Speed fell!"; 
