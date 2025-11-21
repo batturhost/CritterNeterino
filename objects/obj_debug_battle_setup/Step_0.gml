@@ -18,7 +18,6 @@ if (mouse_check_button_released(mb_left)) {
 if (is_dragging) {
     window_x1 = _mx + drag_dx;
     window_y1 = _my + drag_dy;
-    
     // Recalculate positions
     window_x2 = window_x1 + window_width;
     window_y2 = window_y1 + window_height;
@@ -36,7 +35,7 @@ if (is_dragging) {
     list_e_y1 = window_y1 + 60;
     list_e_x2 = list_e_x1 + _list_w;
     list_e_y2 = list_e_y1 + _list_h;
-    
+
     btn_fight_x1 = window_x1 + (window_width / 2) - (btn_fight_w / 2);
     btn_fight_y1 = list_p_y2 + 30;
     btn_fight_x2 = btn_fight_x1 + btn_fight_w;
@@ -60,6 +59,9 @@ if (_click) {
     
     // --- START BATTLE ---
     if (btn_fight_hover) {
+        // [FIX] Check if battle already exists to prevent stacking
+        if (instance_exists(obj_battle_manager)) exit;
+
         // 1. Set Player Critter (Slot 0)
         var _p_key = critter_list[player_selected_index];
         var _p_data = global.bestiary[$ _p_key];
@@ -84,7 +86,7 @@ if (_click) {
         
         var _opp_data = {
             name: "Debug Opponent",
-            profile_pic_sprite: spr_1,
+            profile_pic_sprite: spr_1, // [FIX] Updated to use new sprite system (was spr_avatar_user_default)
             critter_keys: [ _e_key ],
             critter_levels: [ 50 ], // Level 50 for testing
             lose_message: "Debug match ended.",
@@ -98,7 +100,7 @@ if (_click) {
             level_cap: 100
         });
         
-        instance_destroy(); // Close debugger
+        // [FIX] REMOVED instance_destroy() so the window stays open
     }
     
     // --- LIST SELECTION ---
