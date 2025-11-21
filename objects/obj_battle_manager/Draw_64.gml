@@ -22,8 +22,8 @@ draw_scanlines_95(_inner_x, _inner_y, _inner_x + _inner_w, _inner_y + _inner_h);
 // --- CHECK FOR DOWNLOAD STATE ---
 if (current_state == BATTLE_STATE.WIN_DOWNLOAD_PROGRESS || current_state == BATTLE_STATE.WIN_DOWNLOAD_COMPLETE)
 {
+    // ... (Keep Download Modal Logic Unchanged) ...
     // === DRAW MODAL POPUP WINDOW ===
-    // Dimensions match obj_critter_confirm_manager (440x400)
     var _pop_w = 440;
     var _pop_h = 400;
     var _pop_x1 = window_x1 + (window_width - _pop_w) / 2;
@@ -143,7 +143,7 @@ else
     draw_set_halign(fa_left);
     
     // --- VISUAL HP BAR UPDATE (ENEMY) ---
-    var _e_hp_perc = enemy_visual_hp / enemy_critter_data.max_hp; // Use Visual HP
+    var _e_hp_perc = enemy_visual_hp / enemy_critter_data.max_hp; 
     var _e_bar_x1 = info_enemy_x1 + 10; var _e_bar_y1 = info_enemy_y1 + 40;
     var _e_bar_x2 = info_enemy_x2 - 10;
     var _e_bar_y2 = info_enemy_y1 + 60;
@@ -152,7 +152,18 @@ else
     // Determine Color (Green > 50%, Yellow > 20%, Red <= 20%)
     var _e_col = c_green;
     if (_e_hp_perc <= 0.5) _e_col = c_yellow;
-    if (_e_hp_perc <= 0.2) _e_col = c_red;
+    
+    if (_e_hp_perc <= 0.1) {
+        _e_col = c_red;
+        // [FIX] Smooth Blink Logic
+        if (current_state != BATTLE_STATE.WAIT_FOR_HP_DRAIN) {
+            // Use a sine wave for smooth fade: (sin(time) + 1) / 2 gives 0 to 1
+            // Multiply time by a small number to slow it down
+            var _blink_amt = (sin(current_time / 150) + 1) / 2; 
+            // Blend between Red and White
+            _e_col = merge_color(c_red, c_white, _blink_amt * 0.7); // 0.7 keeps it from going purely white
+        }
+    }
     
     draw_set_color(_e_col);
     var _e_fill_w = (_e_bar_x2 - _e_bar_x1 - 4) * _e_hp_perc;
@@ -168,16 +179,26 @@ else
     draw_set_halign(fa_left);
     
     // --- VISUAL HP BAR UPDATE (PLAYER) ---
-    var _p_hp_perc = player_visual_hp / player_critter_data.max_hp; // Use Visual HP
+    var _p_hp_perc = player_visual_hp / player_critter_data.max_hp; 
     var _p_bar_x1 = info_player_x1 + 10; var _p_bar_y1 = info_player_y1 + 40;
     var _p_bar_x2 = info_player_x2 - 10;
     var _p_bar_y2 = info_player_y1 + 60;
     draw_rectangle_95(_p_bar_x1, _p_bar_y1, _p_bar_x2, _p_bar_y2, "sunken"); 
     
-    // Determine Color (Green > 50%, Yellow > 20%, Red <= 20%)
+    // Determine Color
     var _p_col = c_green;
     if (_p_hp_perc <= 0.5) _p_col = c_yellow;
-    if (_p_hp_perc <= 0.2) _p_col = c_red;
+    
+    if (_p_hp_perc <= 0.2) {
+        _p_col = c_red;
+        // [FIX] Smooth Blink Logic
+        if (current_state != BATTLE_STATE.WAIT_FOR_HP_DRAIN) {
+            // Use a sine wave for smooth fade: (sin(time) + 1) / 2 gives 0 to 1
+            var _blink_amt = (sin(current_time / 150) + 1) / 2; 
+            // Blend between Red and White
+            _p_col = merge_color(c_red, c_white, _blink_amt * 0.7);
+        }
+    }
     
     draw_set_color(_p_col);
     var _p_fill_w = (_p_bar_x2 - _p_bar_x1 - 4) * _p_hp_perc;
@@ -190,8 +211,8 @@ else
     }
     _xp_perc = clamp(_xp_perc, 0, 1);
 
-    var _xp_bar_y1 = _p_bar_y2 + 4; // 4 pixels below HP bar
-    var _xp_bar_y2 = _xp_bar_y1 + 6; // Thin bar (6px height)
+    var _xp_bar_y1 = _p_bar_y2 + 4; 
+    var _xp_bar_y2 = _xp_bar_y1 + 6; 
     
     // Draw Background (Dark Gray)
     draw_set_color(c_dkgray);

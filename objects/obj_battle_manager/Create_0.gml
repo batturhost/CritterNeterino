@@ -4,8 +4,8 @@
 event_inherited();
 
 // 2. Window Properties
-window_width = 800; // Updated to 800
-window_height = 600; // Updated to 600
+window_width = 800;
+window_height = 600;
 window_title = "CNet_Battle_Sys.exe - [ACTIVE]";
 
 // Recalculate Center
@@ -48,7 +48,7 @@ enum BATTLE_STATE {
     WIN_DOWNLOAD_PROGRESS, WIN_DOWNLOAD_COMPLETE,
     WIN_XP_GAIN, WIN_CHECK_LEVEL, WIN_LEVEL_UP_MSG,
     WIN_END, LOSE,
-    WAIT_FOR_HP_DRAIN // <-- NEW STATE
+    WAIT_FOR_HP_DRAIN
 }
 current_state = BATTLE_STATE.START;
 
@@ -152,12 +152,15 @@ download_sprite = noone;
 download_bar_x1 = window_x1 + (window_width / 2) - (download_bar_w / 2); 
 download_bar_y1 = window_y1 + (window_height / 2);
 
-// ================== NEW: HP SLIDE VARIABLES ==================
+// ================== HP SLIDE VARIABLES ==================
 player_visual_hp = player_critter_data.hp;
 enemy_visual_hp = enemy_critter_data.hp;
-hp_drain_speed = 0.5; // Pixels per frame (or HP points per frame)
-next_state_after_drain = BATTLE_STATE.WAIT_FOR_PLAYER_MOVE; // Where to go after drain finishes
-// =============================================================
+hp_drain_speed = 0.5; 
+next_state_after_drain = BATTLE_STATE.WAIT_FOR_PLAYER_MOVE; 
+
+// ================== NEW: HP BLINK TIMER ==================
+hp_blink_timer = 0;
+// =========================================================
 
 // ============================================================================
 //   CORE BATTLE LOGIC FUNCTION
@@ -217,10 +220,7 @@ perform_turn_logic = function(_user_actor, _target_actor, _user_data, _target_da
             var P = _move.atk;
             
             // --- UPDATED DAMAGE FORMULA ---
-            // Divisor changed from 50 to 35 for ~40% more damage
             var _damage = floor( ( ( ( (2 * L / 5) + 2 ) * P * (A / D) ) / 35 ) + 2 );
-            
-            // Apply Type Multiplier
             _damage = floor(_damage * _type_mult);
             
             _target_data.hp = max(0, _target_data.hp - _damage);
@@ -229,7 +229,6 @@ perform_turn_logic = function(_user_actor, _target_actor, _user_data, _target_da
             if (_type_mult > 1.0) battle_log_text += " It's super effective!";
             if (_type_mult < 1.0) battle_log_text += " It's not very effective...";
 
-            // Secondary Effects
             if (_move.move_name == "Mud Shot") {
                 _target_data.spd_stage = clamp(_target_data.spd_stage - 1, -6, 6);
                 battle_log_text = "Mud Shot hit! Speed fell!"; 

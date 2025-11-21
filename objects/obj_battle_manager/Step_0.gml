@@ -91,6 +91,10 @@ if (current_state == BATTLE_STATE.PLAYER_TURN && current_menu == MENU.FIGHT) {
     btn_move_menu[3] = [_back_bx1, _back_by1, _back_bx1 + _btn_w, _back_by1 + _btn_h, "BACK"];
 }
 
+// ================== UPDATED: SLOWER BLINK TIMER ==================
+// Increased cycle from 20 to 60 frames (1 second cycle at 60fps)
+hp_blink_timer = (hp_blink_timer + 1) % 60; 
+// ================================================================
 
 // --- 4. Battle State Machine ---
 if (is_dragging) _click = false;
@@ -295,28 +299,23 @@ switch (current_state) {
         var _passive_dmg = floor(enemy_critter_data.max_hp * 0.1); enemy_critter_data.hp = max(0, enemy_critter_data.hp - _passive_dmg);
         effect_play_hurt(enemy_actor); alarm[0] = 90; current_state = BATTLE_STATE.PLAYER_TURN; break;
         
-    // === UPDATED: CONSTANT HP DRAIN LOGIC ===
+    // === HP DRAIN STATE ===
     case BATTLE_STATE.WAIT_FOR_HP_DRAIN:
-        // Move visual HP towards target at a constant speed
-        // Use the variable set in Create Event
-        var _speed = hp_drain_speed; 
-        if (_speed <= 0) _speed = 0.2; // Fallback if somehow 0
+        var _p_diff = abs(player_visual_hp - player_critter_data.hp);
+        var _e_diff = abs(enemy_visual_hp - enemy_critter_data.hp);
         
-        // Player Drain
-        if (player_visual_hp > player_critter_data.hp) player_visual_hp = max(player_critter_data.hp, player_visual_hp - _speed);
-        else if (player_visual_hp < player_critter_data.hp) player_visual_hp = min(player_critter_data.hp, player_visual_hp + _speed);
+        var _p_speed = max(0.2, _p_diff / 15); // Slower drain
+        var _e_speed = max(0.2, _e_diff / 15);
         
-        // Enemy Drain
-        if (enemy_visual_hp > enemy_critter_data.hp) enemy_visual_hp = max(enemy_critter_data.hp, enemy_visual_hp - _speed);
-        else if (enemy_visual_hp < enemy_critter_data.hp) enemy_visual_hp = min(enemy_critter_data.hp, enemy_visual_hp + _speed);
+        if (player_visual_hp > player_critter_data.hp) player_visual_hp = max(player_critter_data.hp, player_visual_hp - _p_speed);
+        else if (player_visual_hp < player_critter_data.hp) player_visual_hp = min(player_critter_data.hp, player_visual_hp + _p_speed);
         
-        // Check if done (tolerance of 0.5 for float)
+        if (enemy_visual_hp > enemy_critter_data.hp) enemy_visual_hp = max(enemy_critter_data.hp, enemy_visual_hp - _e_speed);
+        else if (enemy_visual_hp < enemy_critter_data.hp) enemy_visual_hp = min(enemy_critter_data.hp, enemy_visual_hp + _e_speed);
+        
         if (abs(player_visual_hp - player_critter_data.hp) < 0.5 && abs(enemy_visual_hp - enemy_critter_data.hp) < 0.5) {
-            // Snap to exact
             player_visual_hp = player_critter_data.hp;
             enemy_visual_hp = enemy_critter_data.hp;
-            
-            // Proceed
             current_state = next_state_after_drain;
             alarm[0] = 120;
         }
