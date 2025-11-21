@@ -84,7 +84,7 @@ if (_click) {
         
         var _opp_data = {
             name: "Debug Opponent",
-            profile_pic_sprite: spr_avatar_user_default,
+            profile_pic_sprite: spr_1,
             critter_keys: [ _e_key ],
             critter_levels: [ 50 ], // Level 50 for testing
             lose_message: "Debug match ended.",

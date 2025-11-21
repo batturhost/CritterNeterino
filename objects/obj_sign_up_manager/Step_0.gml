@@ -98,7 +98,7 @@ switch (current_focus) {
             global.PlayerData = {
                 name: player_name,
                 gender: gender_selection,
-                profile_pic: spr_avatar_user_default, 
+                profile_pic: spr_1, 
                 current_cup_index: 0,
                 current_opponent_index: 0,
                 team: [], 

@@ -3,7 +3,7 @@
 
 /// @function OpponentData(_name, _pfp_sprite, _team_keys, _team_levels, _lose_message, _is_glitched = false)
 function OpponentData(_name, _pfp_sprite, _team_keys, _team_levels, _lose_message, _is_glitched = false) constructor {
-    name = _name; 
+    name = _name;
     profile_pic_sprite = _pfp_sprite;
     critter_keys = _team_keys;
     critter_levels = _team_levels;
@@ -29,25 +29,30 @@ function init_cup_database() {
     var _bronze_opponents = [
         
         // Opponent 0 (Easy)
-        new OpponentData( "RabbitLuvr", spr_avatar_user_01, [ "rabbit" ], [ 8 ], "U got lucky... my rabbit is usually way faster." ),
+        // WAS: spr_avatar_user_01
+        new OpponentData( "RabbitLuvr", spr_1, [ "rabbit" ], [ 8 ], "U got lucky... my rabbit is usually way faster." ),
         
         // Opponent 1 (Easy)
-        new OpponentData( "GeckoGamer", spr_avatar_user_02, [ "gecko" ], [ 10 ], "My connection must be lagging." ),
+        // WAS: spr_avatar_user_02
+        new OpponentData( "GeckoGamer", spr_2, [ "gecko" ], [ 10 ], "My connection must be lagging." ),
         
         // Opponent 2 (Medium)
-        new OpponentData( "CatAttack", spr_avatar_user_03, [ "cat", "chinchilla" ], [ 10, 11 ], "lol whatever. my chinchilla was bugged. reported." ),
+        // WAS: spr_avatar_user_03
+        new OpponentData( "CatAttack", spr_3, [ "cat", "chinchilla" ], [ 10, 11 ], "lol whatever. my chinchilla was bugged. reported." ),
         
         // Opponent 3 (Medium)
-        new OpponentData( "SqueakSquad", spr_avatar_user_01, [ "pomeranian", "raccoon" ], [ 12, 12 ], "My critters didn't listen to me! Unfair!" ),
+        // WAS: spr_avatar_user_01
+        new OpponentData( "SqueakSquad", spr_4, [ "pomeranian", "raccoon" ], [ 12, 12 ], "My critters didn't listen to me! Unfair!" ),
         
         // Opponent 4 ("THE WALL" / BOSS)
+        // WAS: spr_avatar_user_03
         new OpponentData(
             "BronzeMod",
-            spr_avatar_user_03,
-            [ "hedgehog", "koala", "snake" ], // Strong team
-            [ 14, 14, 16 ], // Level 16 is ABOVE the cap
+            spr_5, // Using a different one for the boss
+            [ "hedgehog", "koala", "snake" ], 
+            [ 14, 14, 16 ], 
             "...Protocol violation detected. Account flagged.",
-            true // This is an "unfair" glitched opponent
+            true 
         )
     ];
     

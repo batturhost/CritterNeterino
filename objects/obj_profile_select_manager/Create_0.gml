@@ -23,12 +23,14 @@ window_y1 = (display_get_gui_height() / 2) - (window_height / 2);
 window_x2 = window_x1 + window_width;
 window_y2 = window_y1 + window_height;
 
-// 3. Avatar List
+// 3. Avatar List (UPDATED)
+// Now using spr_1 through spr_8
+// We repeat them to fill the 4x4 grid (16 slots)
 avatar_list = [
-    spr_avatar_user_default, spr_avatar_user_01, spr_avatar_user_02, spr_avatar_user_03,
-    spr_avatar_user_01, spr_avatar_user_02, spr_avatar_user_03, spr_avatar_user_default,
-    spr_avatar_user_02, spr_avatar_user_03, spr_avatar_user_default, spr_avatar_user_01,
-    spr_avatar_user_03, spr_avatar_user_default, spr_avatar_user_01, spr_avatar_user_02
+    spr_1, spr_2, spr_3, spr_4,
+    spr_5, spr_6, spr_7, spr_8,
+    spr_1, spr_2, spr_3, spr_4,
+    spr_5, spr_6, spr_7, spr_8
 ];
 
 // 4. Grid Layout (Left Side)
@@ -41,8 +43,6 @@ grid_w = (grid_cols * cell_size) + ((grid_cols - 1) * grid_padding);
 grid_h = (grid_rows * cell_size) + ((grid_rows - 1) * grid_padding);
 
 grid_x1 = window_x1 + 30;
-// [FIX] Moved UP significantly (was +140, now +100 relative to window start, accounting for header)
-// Header starts at +32, text takes ~50px. Grid starts below that.
 grid_y1 = window_y1 + 110; 
 
 // 5. Preview Layout (Right Side)

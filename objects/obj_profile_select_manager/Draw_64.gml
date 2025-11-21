@@ -4,17 +4,26 @@ draw_set_font(fnt_vga);
 draw_set_halign(fa_left);
 draw_set_valign(fa_top);
 
-// 1. Draw Window Background (Teal) & Scanlines
-// This covers the entire window area
-draw_set_color(col_bg); 
+// ================== 1. FULL SCREEN BACKGROUND ==================
+// Draw Teal Background & Scanlines over the whole screen
+draw_set_color(c_teal);
+draw_rectangle(0, 0, display_get_gui_width(), display_get_gui_height(), false);
+draw_scanlines_95(0, 0, display_get_gui_width(), display_get_gui_height());
+
+
+// ================== 2. WINDOW FRAME ==================
+// Draw Window Background (Teal) & Scanlines inside the window area
+// We draw this first so the title bar sits ON TOP of it
+draw_set_color(col_bg);
 draw_rectangle(window_x1, window_y1, window_x2, window_y2, false);
 draw_scanlines_95(window_x1, window_y1, window_x2, window_y2);
 
-// 2. Draw Title Bar (Navy)
+// Draw Title Bar (Navy)
+// Drawn AFTER scanlines to ensure it is solid blue
 draw_set_color(col_title_bar_active);
 draw_rectangle(window_x1 + 2, window_y1 + 2, window_x2 - 2, window_y1 + 32, false);
 
-// 3. Draw Window Title (White Text)
+// Draw Window Title Text (White)
 if (window_width > 50) {
     draw_set_color(c_white);
     draw_set_halign(fa_left);
@@ -24,20 +33,19 @@ if (window_width > 50) {
     draw_set_font(fnt_vga);
 }
 
-// 4. Draw Outer Border (Raised)
+// Draw Outer Border (Raised)
 draw_border_95(window_x1, window_y1, window_x2, window_y2, "raised");
 
-// --- CONTENT AREA (White Box) ---
-// This box starts below the title bar and extends to the bottom, with a small margin.
+
+// ================== 3. CONTENT AREA ==================
 var _content_y = window_y1 + 32;
-var _margin = 2; // Small margin to show the teal border/scanlines if desired, or 0 to fill
-// To match Windows dialogs, usually the content area fills the rest of the window 
-// or leaves a very small frame. Let's leave a 2px margin so the outer border is visible.
+var _margin = 2;
 
+// Draw White Content Box
 draw_set_color(c_white);
-draw_rectangle(window_x1 + _margin, _content_y, window_x2 - _margin, window_y2 - _margin, false); 
+draw_rectangle(window_x1 + _margin, _content_y, window_x2 - _margin, window_y2 - _margin, false);
 
-// 5. Header Text (Inside the white area)
+// Header Text
 var _header_x = window_x1 + 20;
 var _header_y = _content_y + 15;
 
@@ -48,29 +56,27 @@ draw_set_valign(fa_top);
 draw_text_transformed(_header_x, _header_y, "Select a picture", 1.2, 1.2, 0);
 
 draw_set_font(fnt_vga);
-draw_set_color(c_dkgray); // Subtitle gray
+draw_set_color(c_dkgray);
 draw_text(_header_x, _header_y + 30, "Choose how you want to appear on CritterNet.");
 
-// [REMOVED] "Pictures" Label code was here. It is now gone.
 
-// 6. Draw Grid of Avatars
+// ================== 4. AVATAR GRID ==================
 for (var i = 0; i < array_length(avatar_list); i++) {
     var _col = i % grid_cols;
     var _row = floor(i / grid_cols);
     
-    // Use grid_y1 from Create event which is positioned lower
     var _cx = grid_x1 + (_col * (cell_size + grid_padding));
     var _cy = grid_y1 + (_row * (cell_size + grid_padding));
-    
+
     // Highlight Selection
     if (selected_index == i) {
-        draw_set_color(make_color_rgb(200, 220, 255)); 
+        draw_set_color(make_color_rgb(200, 220, 255));
         draw_rectangle(_cx - 2, _cy - 2, _cx + cell_size + 2, _cy + cell_size + 2, false);
         draw_set_color(c_navy);
         draw_rectangle(_cx - 2, _cy - 2, _cx + cell_size + 2, _cy + cell_size + 2, true);
     }
     else if (hover_index == i) {
-        draw_set_color(make_color_rgb(240, 240, 240)); 
+        draw_set_color(make_color_rgb(240, 240, 240));
         draw_rectangle(_cx - 2, _cy - 2, _cx + cell_size + 2, _cy + cell_size + 2, false);
         draw_set_color(c_ltgray);
         draw_rectangle(_cx - 2, _cy - 2, _cx + cell_size + 2, _cy + cell_size + 2, true);
@@ -82,7 +88,6 @@ for (var i = 0; i < array_length(avatar_list); i++) {
     var _sh = sprite_get_height(_spr);
     var _scale = min(cell_size / _sw, cell_size / _sh);
     
-    // Calculate center of cell
     var _draw_x = _cx + (cell_size/2);
     var _draw_y = _cy + (cell_size/2);
     
@@ -95,8 +100,8 @@ for (var i = 0; i < array_length(avatar_list); i++) {
     draw_sprite_ext(_spr, 0, _final_x, _final_y, _scale, _scale, 0, c_white, 1);
 }
 
-// 7. Draw Right Side (Preview & Mock Buttons)
 
+// ================== 5. RIGHT SIDE (PREVIEW) ==================
 // Preview Frame
 draw_set_color(c_white);
 draw_rectangle(preview_x1, preview_y1, preview_x2, preview_y2, false);
@@ -135,7 +140,8 @@ for (var j = 0; j < 3; j++) {
     draw_text(_bx1 + (btn_mock_w/2), _by1 + (btn_mock_h/2), _mock_labels[j]);
 }
 
-// 8. Footer Buttons (OK / Cancel)
+
+// ================== 6. FOOTER BUTTONS ==================
 // OK Button
 var _ok_state = btn_ok_hover ? "sunken" : "raised";
 draw_rectangle_95(btn_ok_x1, btn_ok_y1, btn_ok_x2, btn_ok_y2, _ok_state);

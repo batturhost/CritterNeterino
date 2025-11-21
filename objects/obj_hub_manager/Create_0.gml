@@ -8,7 +8,7 @@ if (!variable_global_exists("PlayerData")) {
     if (!variable_global_exists("CupDatabase")) init_cup_database();
     global.PlayerData = {
         name: "DEBUG_USER", gender: 0,
-        profile_pic: spr_avatar_user_default, 
+        profile_pic: spr_1, 
         current_cup_index: 0, current_opponent_index: 0,
         team: [], pc_box: [], collection_progress: {},
         starter_key: "arctic_fox", starter_name: "Arctic Fox", starter_nickname: "Debug Fox"
