@@ -142,13 +142,16 @@ else
     draw_text(info_enemy_x2 - 10, info_enemy_y1 + 8, "Lv. " + string(enemy_critter_data.level));
     draw_set_halign(fa_left);
     
-    var _e_hp_perc = enemy_critter_data.hp / enemy_critter_data.max_hp;
+    // --- VISUAL HP BAR UPDATE (ENEMY) ---
+    var _e_hp_perc = enemy_visual_hp / enemy_critter_data.max_hp; // Use Visual HP
     var _e_bar_x1 = info_enemy_x1 + 10; var _e_bar_y1 = info_enemy_y1 + 40;
     var _e_bar_x2 = info_enemy_x2 - 10;
     var _e_bar_y2 = info_enemy_y1 + 60;
     draw_rectangle_95(_e_bar_x1, _e_bar_y1, _e_bar_x2, _e_bar_y2, "sunken"); 
     draw_set_color(c_green);
-    draw_rectangle(_e_bar_x1 + 2, _e_bar_y1 + 2, _e_bar_x1 + 2 + ((_e_bar_x2 - _e_bar_x1 - 4) * _e_hp_perc), _e_bar_y2 - 2, false);
+    // Check width > 0 to avoid negative rects
+    var _e_fill_w = (_e_bar_x2 - _e_bar_x1 - 4) * _e_hp_perc;
+    if (_e_fill_w > 0) draw_rectangle(_e_bar_x1 + 2, _e_bar_y1 + 2, _e_bar_x1 + 2 + _e_fill_w, _e_bar_y2 - 2, false);
 
     // Player Box
     draw_set_color(c_white);
@@ -159,14 +162,15 @@ else
     draw_text(info_player_x2 - 10, info_player_y1 + 8, "Lv. " + string(player_critter_data.level));
     draw_set_halign(fa_left);
     
-    // HP BAR
-    var _p_hp_perc = player_critter_data.hp / player_critter_data.max_hp;
+    // --- VISUAL HP BAR UPDATE (PLAYER) ---
+    var _p_hp_perc = player_visual_hp / player_critter_data.max_hp; // Use Visual HP
     var _p_bar_x1 = info_player_x1 + 10; var _p_bar_y1 = info_player_y1 + 40;
     var _p_bar_x2 = info_player_x2 - 10;
     var _p_bar_y2 = info_player_y1 + 60;
     draw_rectangle_95(_p_bar_x1, _p_bar_y1, _p_bar_x2, _p_bar_y2, "sunken"); 
     draw_set_color(c_green);
-    draw_rectangle(_p_bar_x1 + 2, _p_bar_y1 + 2, _p_bar_x1 + 2 + ((_p_bar_x2 - _p_bar_x1 - 4) * _p_hp_perc), _p_bar_y2 - 2, false);
+    var _p_fill_w = (_p_bar_x2 - _p_bar_x1 - 4) * _p_hp_perc;
+    if (_p_fill_w > 0) draw_rectangle(_p_bar_x1 + 2, _p_bar_y1 + 2, _p_bar_x1 + 2 + _p_fill_w, _p_bar_y2 - 2, false);
 
     // --- NEW: XP BAR ---
     var _xp_perc = 0;

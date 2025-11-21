@@ -93,7 +93,6 @@ if (current_state == BATTLE_STATE.PLAYER_TURN && current_menu == MENU.FIGHT) {
 
 
 // --- 4. Battle State Machine ---
-// Core logic remains same, just handling click blocking while dragging
 if (is_dragging) _click = false;
 
 switch (current_state) {
@@ -207,7 +206,8 @@ switch (current_state) {
         
     case BATTLE_STATE.PLAYER_MOVE_RUN: 
         perform_turn_logic(player_actor, enemy_actor, player_critter_data, enemy_critter_data, player_chosen_move_index);
-        alarm[0] = 120; current_state = BATTLE_STATE.WAIT_FOR_PLAYER_MOVE; 
+        next_state_after_drain = BATTLE_STATE.WAIT_FOR_PLAYER_MOVE;
+        current_state = BATTLE_STATE.WAIT_FOR_HP_DRAIN;
         break;
         
     case BATTLE_STATE.ENEMY_TURN:
@@ -226,7 +226,8 @@ switch (current_state) {
 
     case BATTLE_STATE.ENEMY_MOVE_RUN:
         perform_turn_logic(enemy_actor, player_actor, enemy_critter_data, player_critter_data, enemy_chosen_move_index);
-        alarm[0] = 120; current_state = BATTLE_STATE.WAIT_FOR_ENEMY_MOVE;
+        next_state_after_drain = BATTLE_STATE.WAIT_FOR_ENEMY_MOVE;
+        current_state = BATTLE_STATE.WAIT_FOR_HP_DRAIN;
         break;
         
     case BATTLE_STATE.PLAYER_FAINT:
@@ -261,9 +262,6 @@ switch (current_state) {
         
     case BATTLE_STATE.WIN_DOWNLOAD_COMPLETE: break;
 
-    // --- DELETED CONFLICTING XP LOGIC HERE ---
-    // The logic is now exclusively in Alarm 0
-    
     case BATTLE_STATE.WIN_END:
         battle_log_text = "You won the battle! Click to continue.";
         if (mouse_check_button_pressed(mb_left) || keyboard_check_pressed(vk_enter)) {
@@ -296,4 +294,31 @@ switch (current_state) {
         battle_log_text = enemy_critter_data.nickname + " is damaged by the corruption!";
         var _passive_dmg = floor(enemy_critter_data.max_hp * 0.1); enemy_critter_data.hp = max(0, enemy_critter_data.hp - _passive_dmg);
         effect_play_hurt(enemy_actor); alarm[0] = 90; current_state = BATTLE_STATE.PLAYER_TURN; break;
+        
+    // === UPDATED: CONSTANT HP DRAIN LOGIC ===
+    case BATTLE_STATE.WAIT_FOR_HP_DRAIN:
+        // Move visual HP towards target at a constant speed
+        // Use the variable set in Create Event
+        var _speed = hp_drain_speed; 
+        if (_speed <= 0) _speed = 0.2; // Fallback if somehow 0
+        
+        // Player Drain
+        if (player_visual_hp > player_critter_data.hp) player_visual_hp = max(player_critter_data.hp, player_visual_hp - _speed);
+        else if (player_visual_hp < player_critter_data.hp) player_visual_hp = min(player_critter_data.hp, player_visual_hp + _speed);
+        
+        // Enemy Drain
+        if (enemy_visual_hp > enemy_critter_data.hp) enemy_visual_hp = max(enemy_critter_data.hp, enemy_visual_hp - _speed);
+        else if (enemy_visual_hp < enemy_critter_data.hp) enemy_visual_hp = min(enemy_critter_data.hp, enemy_visual_hp + _speed);
+        
+        // Check if done (tolerance of 0.5 for float)
+        if (abs(player_visual_hp - player_critter_data.hp) < 0.5 && abs(enemy_visual_hp - enemy_critter_data.hp) < 0.5) {
+            // Snap to exact
+            player_visual_hp = player_critter_data.hp;
+            enemy_visual_hp = enemy_critter_data.hp;
+            
+            // Proceed
+            current_state = next_state_after_drain;
+            alarm[0] = 120;
+        }
+        break;
 }

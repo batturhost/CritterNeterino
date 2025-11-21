@@ -10,10 +10,7 @@ window_title = "CNet_Battle_Sys.exe - [ACTIVE]";
 
 // Recalculate Center
 window_x1 = (display_get_gui_width() / 2) - (window_width / 2);
-
-// Updated: -20 pixels offset
 window_y1 = (display_get_gui_height() / 2) - (window_height / 2) - 20; 
-
 window_x2 = window_x1 + window_width;
 window_y2 = window_y1 + window_height;
 
@@ -50,7 +47,8 @@ enum BATTLE_STATE {
     PLAYER_SWAP_OUT, PLAYER_SWAP_IN,
     WIN_DOWNLOAD_PROGRESS, WIN_DOWNLOAD_COMPLETE,
     WIN_XP_GAIN, WIN_CHECK_LEVEL, WIN_LEVEL_UP_MSG,
-    WIN_END, LOSE
+    WIN_END, LOSE,
+    WAIT_FOR_HP_DRAIN // <-- NEW STATE
 }
 current_state = BATTLE_STATE.START;
 
@@ -82,8 +80,7 @@ enemy_critter_data.nickname = _enemy_db.animal_name;
 // Spawn Actors
 var _layer_id = layer_get_id("Instances");
 
-// --- INITIALIZE UI VARIABLES HERE TO PREVENT CRASH ---
-// Layout Constants
+// --- INITIALIZE UI VARIABLES ---
 var _log_y1 = window_y1 + (window_height * 0.8);
 
 info_enemy_x1 = window_x1 + 20; 
@@ -96,7 +93,6 @@ info_player_y1 = _log_y1 - info_box_height - 10;
 info_player_x2 = info_player_x1 + info_box_width; 
 info_player_y2 = info_player_y1 + info_box_height;
 
-// Main Menu Buttons
 var _btn_w = 175; var _btn_h = 30; var _btn_gutter = 10;
 var _btn_base_x = window_x2 - (_btn_w * 2) - (_btn_gutter * 2);
 var _btn_base_y = _log_y1 + 15;
@@ -108,7 +104,6 @@ btn_main_menu = [
     [_btn_base_x + _btn_w + _btn_gutter, _btn_base_y + _btn_h + _btn_gutter, _btn_base_x + _btn_w * 2 + _btn_gutter, _btn_base_y + _btn_h * 2 + _btn_gutter, "RUN"]
 ];
 
-// Team Layout
 btn_team_layout = [];
 var _team_btn_w = 400; var _team_btn_h = 100; var _team_box_padding = 10;
 var _team_box_x_start = window_x1 + 40; 
@@ -123,7 +118,6 @@ for (var i = 0; i < 3; i++) {
 var _cancel_x = window_x2 - 120 - 20; 
 var _cancel_y = window_y2 - 40 - 20; 
 array_push(btn_team_layout, [_cancel_x, _cancel_y, _cancel_x + 120, _cancel_y + 40]);
-// -------------------------------------------------------
 
 player_actor = instance_create_layer(0, 0, _layer_id, obj_player_critter);
 enemy_actor = instance_create_layer(0, 0, _layer_id, obj_enemy_critter);
@@ -146,7 +140,6 @@ battle_log_text = "The battle begins!";
 player_chosen_move_index = -1; 
 enemy_chosen_move_index = -1;
 is_force_swapping = false; 
-// btn_main_menu already init above
 btn_move_menu = []; 
 
 download_start_percent = 0;
@@ -159,15 +152,20 @@ download_sprite = noone;
 download_bar_x1 = window_x1 + (window_width / 2) - (download_bar_w / 2); 
 download_bar_y1 = window_y1 + (window_height / 2);
 
+// ================== NEW: HP SLIDE VARIABLES ==================
+player_visual_hp = player_critter_data.hp;
+enemy_visual_hp = enemy_critter_data.hp;
+hp_drain_speed = 0.0; // Pixels per frame (or HP points per frame)
+next_state_after_drain = BATTLE_STATE.WAIT_FOR_PLAYER_MOVE; // Where to go after drain finishes
+// =============================================================
+
 // ============================================================================
 //   CORE BATTLE LOGIC FUNCTION
 // ============================================================================
 perform_turn_logic = function(_user_actor, _target_actor, _user_data, _target_data, _move_index) {
     
-    // 1. Get the move object
     var _move = _user_data.moves[_move_index];
 
-    // 2. Decrement PP
     if (_user_data.move_pp[_move_index] > 0) {
         _user_data.move_pp[_move_index]--;
     }
@@ -209,7 +207,6 @@ perform_turn_logic = function(_user_actor, _target_actor, _user_data, _target_da
             var _def_mult = get_stat_multiplier(_target_data.def_stage);
             
             var _type_mult = 1.0;
-            // Use struct accessors to be safe against undefined
             if (variable_struct_exists(_move, "element") && variable_struct_exists(_target_data, "element_type")) {
                 _type_mult = get_type_effectiveness(_move.element, _target_data.element_type);
             }
@@ -219,7 +216,6 @@ perform_turn_logic = function(_user_actor, _target_actor, _user_data, _target_da
             var D = _target_data.defense * _def_mult;
             var P = _move.atk;
             
-            // Standard Damage Formula
             var _damage = floor( ( ( ( (2 * L / 5) + 2 ) * P * (A / D) ) / 50 ) + 2 );
             _damage = floor(_damage * _type_mult);
             
@@ -229,7 +225,6 @@ perform_turn_logic = function(_user_actor, _target_actor, _user_data, _target_da
             if (_type_mult > 1.0) battle_log_text += " It's super effective!";
             if (_type_mult < 1.0) battle_log_text += " It's not very effective...";
 
-            // Secondary Effects
             if (_move.move_name == "Mud Shot") {
                 _target_data.spd_stage = clamp(_target_data.spd_stage - 1, -6, 6);
                 battle_log_text = "Mud Shot hit! Speed fell!"; 
