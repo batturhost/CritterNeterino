@@ -21,8 +21,22 @@ btn_close_hover = false;
 // We calculate these in Step so they follow the window
 btn_close_x1 = 0; btn_close_y1 = 0; btn_close_x2 = 0; btn_close_y2 = 0;
 
+// ... (Existing code) ...
 // 4. Colors (Aero / XP Style defaults)
 col_title_bar_active = c_navy;
-col_title_bar_inactive = c_dkgray; // Optional: if you want inactive states later
-col_bg = c_teal; // The classic background color
+col_title_bar_inactive = c_dkgray; 
+col_bg = c_teal; 
 use_scanlines = true;
+
+// 5. Opening Animation Variables
+anim_state = 0; // 0=Init, 1=Opening, 2=Open
+anim_timer = 0;
+anim_duration = 15; // Frames
+final_x = 0;
+final_y = 0;
+final_w = 0;
+final_h = 0;
+start_x = 0;
+start_y = 0;
+start_w = 0;
+start_h = 0;
