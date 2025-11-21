@@ -8,8 +8,8 @@ if (start_delay > 0) {
     start_delay--;
 } 
 else {
-    // 3. Click anywhere to start (Only active after delay)
-    if (mouse_check_button_pressed(mb_left) || keyboard_check_pressed(vk_anykey)) {
+    // 3. Check for Enter Key (Instead of Click)
+    if (keyboard_check_pressed(vk_enter)) {
         room_goto(rm_sign_up);
     }
 }

@@ -198,7 +198,8 @@ if (preview_critter != noone) {
     var _xp_w = 100;
     var _xp_h = 6;
     var _xp_x1 = _mid_x - (_xp_w / 2);
-    var _xp_y1 = _text_y_start + 40; 
+    // [FIX] Lowered XP bar position (+5 pixels)
+    var _xp_y1 = _text_y_start + 45; 
     var _xp_x2 = _xp_x1 + _xp_w;
     var _xp_y2 = _xp_y1 + _xp_h;
     
@@ -220,8 +221,11 @@ if (preview_critter != noone) {
     // -------------------------
     
     draw_set_halign(fa_left);
+    // [FIX] Set Text Color to White for Stats
+    draw_set_color(c_white);
+    
     var _stats_x = _panel_x1 + 10;
-    var _stats_y = _text_y_start + 50;
+    var _stats_y = _text_y_start + 55; // Lowered stats text slightly to accommodate new XP bar pos
     draw_text(_stats_x, _stats_y, "HP: " + string(preview_critter.max_hp));
     draw_text(_stats_x, _stats_y + 20, "ATK: " + string(preview_critter.atk));
     draw_text(_stats_x, _stats_y + 40, "DEF: " + string(preview_critter.defense));

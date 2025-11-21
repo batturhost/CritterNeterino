@@ -42,10 +42,10 @@ draw_text(_center_x, _text_y, "Version 1.0");
 
 
 // --- 5. Draw Blinking Prompt (Yellow) ---
-// Removed the 'if (start_delay <= 0)' check so it is always visible
 if (blink_timer < 30) {
     draw_set_color(c_yellow); 
-    draw_text(_center_x, gui_h - 100, "Click to Start Installation...");
+    // Updated Text
+    draw_text(_center_x, gui_h - 100, "Press Enter to Start Installation...");
 }
 
 // --- 6. Draw Footer (Copyright Text) ---

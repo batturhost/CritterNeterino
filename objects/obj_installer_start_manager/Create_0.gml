@@ -7,5 +7,5 @@ blink_timer = 0;
 gui_w = display_get_gui_width();
 gui_h = display_get_gui_height();
 
-// Input delay (5 seconds * 60 frames)
-start_delay = 300;
+// Input delay (Set to 0 as requested)
+start_delay = 0;
