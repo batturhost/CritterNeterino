@@ -31,28 +31,34 @@ var _btn_x2 = _btn_x1 + 80;
 var _btn_y2 = _gui_h - 4;
 var _start_clicked = point_in_box(_mx, _my, _btn_x1, _btn_y1, _btn_x2, _btn_y2) && _click;
 
-// --- 2. TASKBAR BUTTON LOGIC (BRING TO FRONT) ---
+// --- 2. TASKBAR BUTTON LOGIC (BRING TO FRONT & RESTORE) ---
 if (_click && !start_menu_open) {
     var _task_x = _btn_x2 + 10;
     var _task_w = 120;
     var _task_h = 24;
-    var _task_y = _btn_y1; // Align with start button Y
+    var _task_y = _btn_y1; 
 
     for (var i = 0; i < array_length(applications_list); i++) {
         var _obj = applications_list[i][0];
         
-        // Only check if the window actually exists
         if (instance_exists(_obj)) {
-            // Check collision with this button
             if (point_in_box(_mx, _my, _task_x, _task_y, _task_x + _task_w, _task_y + _task_h)) {
-                // HIT! Bring window to front.
+                // HIT! 
                 with (_obj) {
-                    global.top_window_depth -= 1; // Decrease global depth
-                    depth = global.top_window_depth; // Assign to this window
+                    // --- NEW LOGIC: RESTORE IF MINIMIZED ---
+                    if (variable_instance_exists(id, "is_minimized") && is_minimized) {
+                        anim_state = 4; // RESTORE Animation
+                        anim_timer = 0;
+                        // Set task_target to this button's position for cool effect
+                        task_target_x = _task_x;
+                        task_target_y = _task_y;
+                    }
+                    // ---------------------------------------
+                    
+                    global.top_window_depth -= 1; 
+                    depth = global.top_window_depth; 
                 }
             }
-            
-            // Move X for the next button calculation
             _task_x += _task_w + 4;
         }
     }
