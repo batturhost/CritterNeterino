@@ -8,6 +8,7 @@ function get_critter_scale_config(_animal_name) {
         // --- BIG CRITTERS (Scale Down) ---
         case "Capybara":    return 0.8;
         case "Pomeranian":  return 0.8;
+		case "Goose": return 0.7;
         
         // --- SMALL CRITTERS (Scale Down/Up) ---
         case "Rabbit":      return 0.7; // <--- Adjust this number to change Rabbit size

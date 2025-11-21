@@ -43,7 +43,7 @@ switch (vfx_type) {
             });
         }
         break;
-        
+
     case "lazy":
         if (vfx_timer % 20 == 0 && vfx_timer > 0) {
             array_push(vfx_particles, {
@@ -57,7 +57,8 @@ switch (vfx_type) {
     case "water":
         if (vfx_timer == 45) {
             for (var k = 0; k < 20; k++) {
-                var _angle = random_range(0, 360); var _spd = random_range(4, 9);
+                var _angle = random_range(0, 360);
+                var _spd = random_range(4, 9);
                 array_push(vfx_particles, {
                     x: 0, y: -_h * 0.7,
                     speed_x: lengthdir_x(_spd, _angle), speed_y: lengthdir_y(_spd, _angle),
@@ -66,7 +67,7 @@ switch (vfx_type) {
             }
         }
         break;
-        
+
     case "mud":
         if (vfx_timer == 30) {
             for (var k = 0; k < 3; k++) {
@@ -122,16 +123,14 @@ switch (vfx_type) {
             }
         }
         break;
-        
-    // === BAMBOO FIX: Aggressive Spawning ===
+
     case "bamboo":
-        // Spawn only once when the array is empty and timer is running
         if (vfx_timer > 0 && array_length(vfx_particles) == 0) {
             for (var k = 0; k < 8; k++) {
                 array_push(vfx_particles, {
                     x: random_range(-50, 50), 
-                    y: random_range(-150, -50), // Hardcoded height to ensure it starts above
-                    speed_y: random_range(6, 10), // Fast fall
+                    y: random_range(-150, -50),
+                    speed_y: random_range(6, 10),
                     life: 40,
                     max_life: 40,
                     angle: irandom(360), 
@@ -173,32 +172,36 @@ switch (vfx_type) {
         
     case "zoomies":
         if (vfx_timer > 0) {
-            var _shake = (sin(vfx_timer) * 30); x = home_x + _shake;
+            var _shake = (sin(vfx_timer) * 30);
+            x = home_x + _shake;
             if (vfx_timer % 5 == 0) {
                 array_push(vfx_particles, { x: random_range(-30, 30), y: random_range(-_h, 0), speed_x: -10, life: 10, max_life: 10 });
             }
-        } else { x = home_x; }
+        } else { x = home_x;
+        }
         break;
         
     case "dive":
         switch (vfx_state) {
-            case 0: y -= 15; if (y < home_y - 300) { vfx_state = 1; vfx_timer = 15; } break;
+            case 0: y -= 15;
+                if (y < home_y - 300) { vfx_state = 1; vfx_timer = 15; } break;
             case 1: if (vfx_timer > 0) vfx_timer--; else {
                     var _dir = point_direction(x, y, vfx_target_x, vfx_target_y);
                     var _dist = point_distance(x, y, vfx_target_x, vfx_target_y);
                     var _spd = 40; x += lengthdir_x(_spd, _dir); y += lengthdir_y(_spd, _dir);
-                    if (_dist < _spd) { vfx_state = 2; vfx_timer = 30; }
+                    if (_dist < _spd) { vfx_state = 2; vfx_timer = 30;
+                    }
                 } break;
             case 2: x = home_x; y = home_y; vfx_type = "none"; break;
         }
         break;
         
     case "roll":
-        vfx_timer++; if (lunge_state == 0) { vfx_type = "none"; vfx_timer = 0; }
+        vfx_timer++;
+        if (lunge_state == 0) { vfx_type = "none"; vfx_timer = 0; }
         break;
-
     case "shield": case "bite": case "slap": 
-        break; 
+        break;
 }
 
 
@@ -207,14 +210,11 @@ switch (vfx_type) {
 if (array_length(vfx_particles) > 0) {
     for (var i = array_length(vfx_particles) - 1; i >= 0; i--) {
         var _p = vfx_particles[i];
-        
         // 1. Physics (Position)
         if (variable_struct_exists(_p, "speed_x")) _p.x += _p.speed_x;
         if (variable_struct_exists(_p, "speed_y")) _p.y += _p.speed_y;
         if (variable_struct_exists(_p, "gravity")) _p.speed_y += _p.gravity;
-        
         // 2. Physics (Rotation)
-        // Check specifically for bamboo logic
         if (variable_struct_exists(_p, "rot_speed")) {
              if (!variable_struct_exists(_p, "angle")) _p.angle = 0;
              _p.angle += _p.rot_speed;
@@ -227,7 +227,6 @@ if (array_length(vfx_particles) > 0) {
         // 3. Scaling
         if (variable_struct_exists(_p, "scale_speed")) _p.scale += _p.scale_speed;
         if (vfx_type == "ice") _p.scale = (_p.life / _p.max_life) * (_p[$ "scale"] ?? 1.0);
-
         // 4. Special: Tongue Logic
         if (vfx_type == "tongue" && variable_struct_exists(_p, "length")) {
              if (!_p.retracting) {
@@ -249,31 +248,47 @@ if (vfx_type != "none" && vfx_type != "dive" && vfx_type != "zoomies" && vfx_typ
     vfx_timer--;
     if (vfx_timer <= 0 && array_length(vfx_particles) == 0) vfx_type = "none";
 }
-// Handle movement
+
+// Handle movement & Fainting
 if (is_fainting) {
-    if (faint_scale_y > 0) { faint_scale_y -= 0.02; faint_alpha -= 0.02; } 
-    else { faint_scale_y = 0; faint_alpha = 0; }
-} else if (shake_timer > 0) {
+    if (faint_scale_y > 0) { faint_scale_y -= 0.02; faint_alpha -= 0.02;
+    } 
+    else { faint_scale_y = 0; faint_alpha = 0;
+    }
+} 
+// --- [FIX] SHAKE LOGIC: Apply the jitter to x/y ---
+else if (shake_timer > 0) {
     shake_timer--;
-    lunge_current_x = random_range(-3, 3); lunge_current_y = random_range(-3, 3); 
-} else {
+    // Directly apply jitter to home coordinates
+    x = home_x + random_range(-4, 4); 
+    y = home_y + random_range(-4, 4);
+} 
+else {
+    // --- LUNGE LOGIC (Only run if NOT shaking) ---
     if (!variable_instance_exists(id, "lunge_speed")) lunge_speed = 0.1;
+    
     if (vfx_type != "dive" && vfx_type != "zoomies") {
         switch (lunge_state) {
-            case 1:
+            case 1: // Lunging OUT
                 lunge_current_x = lerp(lunge_current_x, lunge_target_x - home_x, lunge_speed);
                 lunge_current_y = lerp(lunge_current_y, lunge_target_y - home_y, lunge_speed); 
                 if (abs(lunge_current_x - (lunge_target_x - home_x)) < 5) lunge_state = 2;
                 break;
-            case 2:
+            case 2: // Returning HOME
                 lunge_current_x = lerp(lunge_current_x, 0, 0.1);
                 lunge_current_y = lerp(lunge_current_y, 0, 0.1); 
                 if (abs(lunge_current_x) < 1 && abs(lunge_current_y) < 1) {
-                    lunge_current_x = 0; lunge_current_y = 0; lunge_state = 0; lunge_speed = 0.1;
+                    lunge_current_x = 0;
+                    lunge_current_y = 0; lunge_state = 0; lunge_speed = 0.1;
                 }
                 break;
-            default: lunge_current_x = 0; lunge_current_y = 0; break;
+            default: 
+                lunge_current_x = 0; lunge_current_y = 0; 
+                break;
         }
-        x = home_x + lunge_current_x; y = home_y + lunge_current_y;
+        
+        // Apply calculated position
+        x = home_x + lunge_current_x;
+        y = home_y + lunge_current_y;
     }
 }
