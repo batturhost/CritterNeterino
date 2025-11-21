@@ -85,12 +85,12 @@ if (current_state == BATTLE_STATE.WIN_DOWNLOAD_PROGRESS || current_state == BATT
         // Sprite Box
         var _center_x = _pop_x1 + (_pop_w/2);
         var _visual_center_y = _pop_y1 + 175;
-        var _max_w = 140; // <-- FIX: Reduced from 200 to fit new box
-        var _max_h = 140; // <-- FIX: Reduced from 130 to fit new box
+        var _max_w = 140; 
+        var _max_h = 140; 
 
         // Draw "Sunken" Frame for sprite
-        var _box_w = 150; // <-- FIX: Reduced from 250
-        var _box_h = 150; // <-- FIX: Reduced from 200
+        var _box_w = 150; 
+        var _box_h = 150; 
         draw_rectangle_95(_center_x - _box_w/2, _visual_center_y - _box_h/2, _center_x + _box_w/2, _visual_center_y + _box_h/2, "sunken");
 
         var _spr_w = sprite_get_width(download_sprite);
@@ -98,7 +98,7 @@ if (current_state == BATTLE_STATE.WIN_DOWNLOAD_PROGRESS || current_state == BATT
         var _fit_scale = min(_max_w / _spr_w, _max_h / _spr_h);
 
         // Draw Sprite Position (Bottom-Center Origin Fix)
-        var _draw_y = _visual_center_y + ((_spr_h / 2) * _fit_scale); // <-- FIX: Calculate centered Y
+        var _draw_y = _visual_center_y + ((_spr_h / 2) * _fit_scale);
 
         draw_sprite_ext(download_sprite, 0, _center_x, _draw_y, _fit_scale, _fit_scale, 0, c_white, 1);
 
@@ -111,7 +111,7 @@ if (current_state == BATTLE_STATE.WIN_DOWNLOAD_PROGRESS || current_state == BATT
 }
 else 
 {
-    // --- STANDARD BATTLE DRAWING (Unchanged) ---
+    // --- STANDARD BATTLE DRAWING ---
     
     // 3. Draw Actors
     var sprite_y_offset = -25;
@@ -159,6 +159,7 @@ else
     draw_text(info_player_x2 - 10, info_player_y1 + 8, "Lv. " + string(player_critter_data.level));
     draw_set_halign(fa_left);
     
+    // HP BAR
     var _p_hp_perc = player_critter_data.hp / player_critter_data.max_hp;
     var _p_bar_x1 = info_player_x1 + 10; var _p_bar_y1 = info_player_y1 + 40;
     var _p_bar_x2 = info_player_x2 - 10;
@@ -166,6 +167,27 @@ else
     draw_rectangle_95(_p_bar_x1, _p_bar_y1, _p_bar_x2, _p_bar_y2, "sunken"); 
     draw_set_color(c_green);
     draw_rectangle(_p_bar_x1 + 2, _p_bar_y1 + 2, _p_bar_x1 + 2 + ((_p_bar_x2 - _p_bar_x1 - 4) * _p_hp_perc), _p_bar_y2 - 2, false);
+
+    // --- NEW: XP BAR ---
+    var _xp_perc = 0;
+    if (player_critter_data.next_level_xp > 0) {
+        _xp_perc = player_critter_data.xp / player_critter_data.next_level_xp;
+    }
+    _xp_perc = clamp(_xp_perc, 0, 1);
+
+    var _xp_bar_y1 = _p_bar_y2 + 4; // 4 pixels below HP bar
+    var _xp_bar_y2 = _xp_bar_y1 + 6; // Thin bar (6px height)
+    
+    // Draw Background (Dark Gray)
+    draw_set_color(c_dkgray);
+    draw_rectangle(_p_bar_x1, _xp_bar_y1, _p_bar_x2, _xp_bar_y2, false);
+    
+    // Draw Fill (Cyan/Blue)
+    if (_xp_perc > 0) {
+        draw_set_color(c_aqua);
+        draw_rectangle(_p_bar_x1, _xp_bar_y1, _p_bar_x1 + ((_p_bar_x2 - _p_bar_x1) * _xp_perc), _xp_bar_y2, false);
+    }
+    // -------------------
 
     // 6. Battle Buttons
     draw_set_color(c_white);

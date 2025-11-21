@@ -194,6 +194,31 @@ if (preview_critter != noone) {
     draw_set_color(c_white);
     draw_text(_mid_x, _text_y_start + 20, "Lv. " + string(preview_critter.level));
     
+    // --- XP BAR IN PC ---
+    var _xp_w = 100;
+    var _xp_h = 6;
+    var _xp_x1 = _mid_x - (_xp_w / 2);
+    var _xp_y1 = _text_y_start + 40; 
+    var _xp_x2 = _xp_x1 + _xp_w;
+    var _xp_y2 = _xp_y1 + _xp_h;
+    
+    var _pc_xp_perc = 0;
+    if (preview_critter.next_level_xp > 0) {
+        _pc_xp_perc = preview_critter.xp / preview_critter.next_level_xp;
+    }
+    _pc_xp_perc = clamp(_pc_xp_perc, 0, 1);
+
+    // Draw Background
+    draw_set_color(c_dkgray);
+    draw_rectangle(_xp_x1, _xp_y1, _xp_x2, _xp_y2, false);
+    
+    // Draw Fill
+    if (_pc_xp_perc > 0) {
+        draw_set_color(c_aqua);
+        draw_rectangle(_xp_x1, _xp_y1, _xp_x1 + (_xp_w * _pc_xp_perc), _xp_y2, false);
+    }
+    // -------------------------
+    
     draw_set_halign(fa_left);
     var _stats_x = _panel_x1 + 10;
     var _stats_y = _text_y_start + 50;
