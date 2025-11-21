@@ -148,8 +148,13 @@ else
     var _e_bar_x2 = info_enemy_x2 - 10;
     var _e_bar_y2 = info_enemy_y1 + 60;
     draw_rectangle_95(_e_bar_x1, _e_bar_y1, _e_bar_x2, _e_bar_y2, "sunken"); 
-    draw_set_color(c_green);
-    // Check width > 0 to avoid negative rects
+    
+    // Determine Color (Green > 50%, Yellow > 20%, Red <= 20%)
+    var _e_col = c_green;
+    if (_e_hp_perc <= 0.5) _e_col = c_yellow;
+    if (_e_hp_perc <= 0.2) _e_col = c_red;
+    
+    draw_set_color(_e_col);
     var _e_fill_w = (_e_bar_x2 - _e_bar_x1 - 4) * _e_hp_perc;
     if (_e_fill_w > 0) draw_rectangle(_e_bar_x1 + 2, _e_bar_y1 + 2, _e_bar_x1 + 2 + _e_fill_w, _e_bar_y2 - 2, false);
 
@@ -168,11 +173,17 @@ else
     var _p_bar_x2 = info_player_x2 - 10;
     var _p_bar_y2 = info_player_y1 + 60;
     draw_rectangle_95(_p_bar_x1, _p_bar_y1, _p_bar_x2, _p_bar_y2, "sunken"); 
-    draw_set_color(c_green);
+    
+    // Determine Color (Green > 50%, Yellow > 20%, Red <= 20%)
+    var _p_col = c_green;
+    if (_p_hp_perc <= 0.5) _p_col = c_yellow;
+    if (_p_hp_perc <= 0.2) _p_col = c_red;
+    
+    draw_set_color(_p_col);
     var _p_fill_w = (_p_bar_x2 - _p_bar_x1 - 4) * _p_hp_perc;
     if (_p_fill_w > 0) draw_rectangle(_p_bar_x1 + 2, _p_bar_y1 + 2, _p_bar_x1 + 2 + _p_fill_w, _p_bar_y2 - 2, false);
 
-    // --- NEW: XP BAR ---
+    // --- XP BAR ---
     var _xp_perc = 0;
     if (player_critter_data.next_level_xp > 0) {
         _xp_perc = player_critter_data.xp / player_critter_data.next_level_xp;
@@ -250,7 +261,13 @@ else
                         var _hp_perc = _critter.hp / _critter.max_hp;
                         var _hp_bar_x1 = _text_x; var _hp_bar_y1 = _btn[1] + 55; var _hp_bar_w = 100; var _hp_bar_h = 10;
                         draw_rectangle_95(_hp_bar_x1, _hp_bar_y1, _hp_bar_x1 + _hp_bar_w, _hp_bar_y1 + _hp_bar_h, "sunken");
-                        draw_set_color(c_green);
+                        
+                        // COLOR LOGIC ALSO FOR TEAM LIST
+                        var _team_col = c_green;
+                        if (_hp_perc <= 0.5) _team_col = c_yellow;
+                        if (_hp_perc <= 0.2) _team_col = c_red;
+                        
+                        draw_set_color(_team_col);
                         draw_rectangle(_hp_bar_x1 + 2, _hp_bar_y1 + 2, _hp_bar_x1 + 2 + ((_hp_bar_w - 4) * _hp_perc), _hp_bar_y1 + _hp_bar_h - 2, false);
                         
                         draw_set_color(c_black);
