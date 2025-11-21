@@ -63,6 +63,7 @@
     {"id":{"name":"MoveData","path":"scripts/MoveData/MoveData.yy",},},
     {"id":{"name":"scr_animal_helpers","path":"scripts/scr_animal_helpers/scr_animal_helpers.yy",},},
     {"id":{"name":"scr_battle_view","path":"scripts/scr_battle_view/scr_battle_view.yy",},},
+    {"id":{"name":"scr_critter_config","path":"scripts/scr_critter_config/scr_critter_config.yy",},},
     {"id":{"name":"scr_cup_database","path":"scripts/scr_cup_database/scr_cup_database.yy",},},
     {"id":{"name":"scr_draw_helpers","path":"scripts/scr_draw_helpers/scr_draw_helpers.yy",},},
     {"id":{"name":"scr_level_helpers","path":"scripts/scr_level_helpers/scr_level_helpers.yy",},},
