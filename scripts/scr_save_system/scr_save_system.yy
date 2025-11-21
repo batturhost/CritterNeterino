@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"scr_save_system",
   "parent":{
-    "name":"Backup_A",
-    "path":"Backup_A.yyp",
+    "name":"Scripts",
+    "path":"folders/Scripts.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

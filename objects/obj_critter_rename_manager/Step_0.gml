@@ -52,7 +52,7 @@ if (_key_enter || mouse_check_button_pressed(mb_left)) {
         
         // 2. Set its nickname, gender, and calculate stats
         _starter_critter.nickname = nickname;
-        _starter_critter.gender = critter_gender; // <-- FIX: Gender is now saved
+        _starter_critter.gender = critter_gender; 
         recalculate_stats(_starter_critter); // This also sets its HP to max
         
         // 3. Add this new critter to the player's team
@@ -60,6 +60,7 @@ if (_key_enter || mouse_check_button_pressed(mb_left)) {
         
         // ================== END OF NEW CODE ========================
         
-        room_goto(rm_hub);
+        // [CHANGE] Go to Profile Selection instead of Hub
+        room_goto(rm_profile_select);
     }
 }
