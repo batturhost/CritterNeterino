@@ -4,8 +4,6 @@
 event_inherited();
 
 // [FIX] RE-CALCULATE BOUNDS IMMEDIATELY
-// The parent updates x1/y1 at the end of its step, leaving x2/y2 stale.
-// We must update them manually here so UI anchored to the right/bottom doesn't lag.
 window_x2 = window_x1 + window_width;
 window_y2 = window_y1 + window_height;
 
@@ -14,7 +12,6 @@ var _my = device_mouse_y_to_gui(0);
 var _click = mouse_check_button_pressed(mb_left);
 
 // --- 2. RECALCULATE UI POSITIONS (Sticky UI) ---
-// ... (The rest of your Step event code remains exactly the same) ...
 // Actor Home Positions
 player_actor.home_x = window_x1 + (window_width * 0.3);
 player_actor.home_y = window_y1 + (window_height * 0.7);
@@ -261,15 +258,12 @@ switch (current_state) {
             }
         }
         break;
+        
     case BATTLE_STATE.WIN_DOWNLOAD_COMPLETE: break;
 
-    case BATTLE_STATE.WIN_XP_GAIN:
-        var _xp_gain = 100; player_critter_data.xp += _xp_gain;
-        battle_log_text = player_critter_data.nickname + " gained " + string(_xp_gain) + " XP!";
-        alarm[0] = 120; current_state = BATTLE_STATE.WIN_CHECK_LEVEL; break;
-
-    case BATTLE_STATE.WIN_CHECK_LEVEL: case BATTLE_STATE.WIN_LEVEL_UP_MSG: break;
-
+    // --- DELETED CONFLICTING XP LOGIC HERE ---
+    // The logic is now exclusively in Alarm 0
+    
     case BATTLE_STATE.WIN_END:
         battle_log_text = "You won the battle! Click to continue.";
         if (mouse_check_button_pressed(mb_left) || keyboard_check_pressed(vk_enter)) {
