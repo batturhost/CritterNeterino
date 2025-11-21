@@ -81,7 +81,8 @@ switch (current_state) {
             [_btn_base_x, _btn_base_y, _btn_base_x + _btn_w, _btn_base_y + _btn_h, player_critter_data.moves[0].move_name],
             [_btn_base_x + _btn_w + _btn_gutter, _btn_base_y, _btn_base_x + _btn_w * 2 + _btn_gutter, _btn_base_y + _btn_h, player_critter_data.moves[1].move_name], 
             [_btn_base_x, _btn_base_y + _btn_h + _btn_gutter, _btn_base_x + _btn_w, _btn_base_y + _btn_h * 2 + _btn_gutter, player_critter_data.moves[2].move_name],
-            [_btn_base_x + _btn_w + _btn_gutter, _btn_base_y + _btn_h + _btn_gutter, _btn_base_x + _btn_w * 2 + _btn_gutter, _btn_base_y + _btn_h * 2 + _btn_gutter, "BACK"]
+            [_btn_base_x + _btn_w + _btn_gutter, _btn_base_y + _btn_h + 
+            _btn_gutter, _btn_base_x + _btn_w * 2 + _btn_gutter, _btn_base_y + _btn_h * 2 + _btn_gutter, "BACK"]
         ];
         var _layer_id = layer_get_id("Instances");
         var _px = window_x1 + (window_width * 0.3);
@@ -90,7 +91,7 @@ switch (current_state) {
         init_animal(player_actor, player_critter_data, player_critter_data.sprite_idle_back);
         
         // ================== NEW SCALING LOGIC ==================
-        var _p_scale_mult = get_critter_scale_config(player_critter_data.animal_name);
+        var _p_scale_mult = get_critter_scale_config(player_critter_data.animal_name, true); // Pass TRUE for player
         player_actor.my_scale = 0.33 * 1.30 * _p_scale_mult;
         // ========================================================
         
@@ -114,7 +115,8 @@ switch (current_state) {
         var _b_spd = enemy_critter_data.base_spd;
         var _base_yield = (_b_hp + _b_atk + _b_def + _b_spd) / 4;
         // 2. Determine Trainer Bonus (1.5x for Ranked, 1.0x for Casual)
-        var _trainer_bonus = is_casual ? 1.0 : 1.5;
+        var _trainer_bonus = is_casual ?
+        1.0 : 1.5;
         
         // 3. Formula: (Yield * Level * Bonus) / 7
         var _val = (_base_yield * enemy_critter_data.level * _trainer_bonus) / 7;

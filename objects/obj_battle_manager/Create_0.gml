@@ -120,8 +120,8 @@ recalculate_stats(enemy_critter_data);
 player_critter_data.hp = global.PlayerData.team[0].hp;
 
 // ================== NEW SCALING SYSTEM ==================
-var _p_scale_mult = get_critter_scale_config(player_critter_data.animal_name);
-var _e_scale_mult = get_critter_scale_config(enemy_critter_data.animal_name);
+var _p_scale_mult = get_critter_scale_config(player_critter_data.animal_name, true); // TRUE for Player
+var _e_scale_mult = get_critter_scale_config(enemy_critter_data.animal_name, false); // FALSE for Enemy
 
 // Apply Base Scale (0.33) * Perspective (1.30 for player) * Config Multiplier
 player_actor.my_scale = 0.33 * 1.30 * _p_scale_mult;
@@ -137,7 +137,7 @@ btn_move_menu = [];
 download_start_percent = 0;
 download_end_percent = 0; 
 download_current_percent = 0;
-download_bar_w = 400; 
+download_bar_w = 400;
 download_bar_h = 30;
 download_filename = "";
 download_sprite = noone;
@@ -268,32 +268,32 @@ perform_turn_logic = function(_user_actor, _target_actor, _user_data, _target_da
                 effect_play_hurt(_target_actor); 
             }
             else if (_move.move_name == "Snow Cloak") { effect_play_snow(_user_actor);
-            battle_log_text = _user_data.nickname + " hid in the snow!"; } 
+                battle_log_text = _user_data.nickname + " hid in the snow!"; } 
             else if (_move.move_name == "Zen Barrier") { effect_play_zen(_user_actor);
-            battle_log_text = _user_data.nickname + " meditated! Defense rose!"; } 
+                battle_log_text = _user_data.nickname + " meditated! Defense rose!"; } 
             else if (_move.move_name == "Wall Climb") { effect_play_up_arrow(_user_actor);
-            _user_data.spd_stage += 1; battle_log_text = _user_data.nickname + " climbed up! Speed rose!";
+                _user_data.spd_stage += 1; battle_log_text = _user_data.nickname + " climbed up! Speed rose!";
             } 
             else if (_move.move_name == "Tail Shed") { effect_play_tail_shed(_user_actor);
-            _user_data.def_stage += 2; battle_log_text = _user_data.nickname + " shed its tail! Defense rose sharply!";
+                _user_data.def_stage += 2; battle_log_text = _user_data.nickname + " shed its tail! Defense rose sharply!";
             } 
             else if (_move.move_name == "Withdraw") { effect_play_shield(_user_actor);
-            _user_data.def_stage += 2; battle_log_text = _user_data.nickname + " withdrew! Defense rose sharply!";
+                _user_data.def_stage += 2; battle_log_text = _user_data.nickname + " withdrew! Defense rose sharply!";
             } 
             else if (_move.move_name == "Zoomies") { effect_play_zoomies(_user_actor);
-            _user_data.spd_stage += 2; battle_log_text = _user_data.nickname + " got the zoomies! Speed rose sharply!";
+                _user_data.spd_stage += 2; battle_log_text = _user_data.nickname + " got the zoomies! Speed rose sharply!";
             }
             else if (_move.move_name == "Fluff Puff") { effect_play_puff(_user_actor);
-            _user_data.def_stage += 1; battle_log_text = _user_data.nickname + " puffed up! Defense rose!";
+                _user_data.def_stage += 1; battle_log_text = _user_data.nickname + " puffed up! Defense rose!";
             }
             else if (_move.move_name == "Dust Bath") { effect_play_dust(_user_actor);
-            _user_data.def_stage += 1; battle_log_text = _user_data.nickname + " rolled in dust! Defense rose!";
+                _user_data.def_stage += 1; battle_log_text = _user_data.nickname + " rolled in dust! Defense rose!";
             }
             else if (_move.move_name == "Coil") { effect_play_coil(_user_actor);
-            _user_data.atk_stage += 1; battle_log_text = _user_data.nickname + " coiled up! Attack rose!";
+                _user_data.atk_stage += 1; battle_log_text = _user_data.nickname + " coiled up! Attack rose!";
             }
             else if (_move.move_name == "Lazy Stance") { effect_play_lazy(_user_actor);
-            _user_data.def_stage += 1; battle_log_text = _user_data.nickname + " is slacking off! Defense rose!";
+                _user_data.def_stage += 1; battle_log_text = _user_data.nickname + " is slacking off! Defense rose!";
             }
             else { battle_log_text = _user_data.nickname + "'s stats rose!";
             }

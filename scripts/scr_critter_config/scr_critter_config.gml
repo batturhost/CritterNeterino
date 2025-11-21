@@ -1,20 +1,35 @@
 // --- scr_critter_config.gml ---
-// Use this file to control the size of specific critters in battle.
 // Returns a multiplier (e.g., 1.0 = normal, 0.5 = half size, 2.0 = double size)
+// Now accepts _is_player (boolean) to distinguish between Back and Front sprites.
 
-function get_critter_scale_config(_animal_name) {
+function get_critter_scale_config(_animal_name, _is_player) {
     switch (_animal_name) {
         
         // --- BIG CRITTERS (Scale Down) ---
-        case "Capybara":    return 0.8;
-        case "Pomeranian":  return 0.8;
-		case "Goose": return 0.7;
+        case "Capybara":
+            if (_is_player) return 0.8; // Back Sprite scale
+            else return 0.8;            // Front Sprite scale
+            
+        case "Pomeranian":
+            if (_is_player) return 0.8;
+            else return 0.8;
+            
+		case "Goose":
+            if (_is_player) return 0.7;
+            else return 0.7;
         
         // --- SMALL CRITTERS (Scale Down/Up) ---
-        case "Rabbit":      return 0.7; // <--- Adjust this number to change Rabbit size
+        case "Rabbit":      
+            if (_is_player) return 0.7;
+            else return 0.7;
+		case "Axolotl":
+			if (_is_player) return 0.7;
+			else return 1.0;
         
-        // Add new cases here as needed:
-        // case "Dragon": return 1.5;
+        // Example of differing scales:
+        // case "Dragon": 
+        //     if (_is_player) return 1.2; // Make back sprite huge
+        //     else return 0.8;            // Make front sprite smaller to fit
         
         // --- DEFAULT (Everyone else) ---
         default: return 1.0;
