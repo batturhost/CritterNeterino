@@ -1,20 +1,16 @@
 // --- Create Event ---
-
-// 1. INHERIT PARENT
 event_inherited();
 
-// 2. Window Properties
+// Window Setup
 window_width = 800;
 window_height = 500;
 window_title = "CritterNet Browser";
-
-// Recalculate Position
 window_x1 = (display_get_gui_width() / 2) - (window_width / 2);
 window_y1 = (display_get_gui_height() / 2) - (window_height / 2);
 window_x2 = window_x1 + window_width;
 window_y2 = window_y1 + window_height;
 
-// 3. Get Player & Opponent Data
+// Player Data
 var _cup_index = global.PlayerData.current_cup_index;
 var _opp_index = global.PlayerData.current_opponent_index;
 current_cup = global.CupDatabase[_cup_index];
@@ -33,8 +29,12 @@ if (_opp_index >= array_length(current_cup.opponents)) {
 player_name = global.PlayerData.name;
 player_pfp = global.PlayerData.profile_pic;
 
-// 4. FLAVOR CONTENT
-// Weather
+// --- STATE MACHINE (Only define these HERE) ---
+browser_state = "browsing"; 
+search_timer = 0;
+match_display_timer = 0;
+
+// --- RANDOMIZATION (Only run THIS here) ---
 var _w_data = [
     ["Clear Skies", 0, 15, 25], ["Sunny", 0, 20, 32], ["Heatwave", 0, 30, 40],
     ["Partly Cloudy", 1, 12, 22], ["Overcast", 1, 8, 18], ["Foggy", 1, 5, 15],
@@ -47,7 +47,6 @@ weather_icon_idx = _pick[1];
 weather_temp = irandom_range(_pick[2], _pick[3]);
 weather_string = string(weather_temp);
 
-// News
 var _news_headlines = [
     "Bronze Cup Finals: Who will win?",
     "Market Watch: Potion prices stable.",
@@ -58,7 +57,6 @@ var _news_headlines = [
 ];
 current_news = _news_headlines[irandom(array_length(_news_headlines) - 1)];
 
-// Daily Deal
 var _daily_deals = [
     "Free month of CritterNet dial-up!",
     "Upgrade your RAM to 64MB today!",
@@ -67,7 +65,6 @@ var _daily_deals = [
 ];
 current_deal = _daily_deals[irandom(array_length(_daily_deals) - 1)];
 
-// Fact
 var _facts = [
     "Sea otters hold hands while sleeping so they don't drift apart.",
     "A group of flamingos is called a 'flamboyance'.",
@@ -81,7 +78,7 @@ var _facts = [
 ];
 current_fact = _facts[irandom(array_length(_facts) - 1)];
 
-// 5. Define Areas
+// Layout Vars
 sidebar_w = 180;
 sidebar_x1 = window_x1 + 2;
 sidebar_y1 = window_y1 + 32;
@@ -93,9 +90,8 @@ content_y1 = sidebar_y1;
 content_x2 = window_x2 - 2;
 content_y2 = window_y2 - 2;
 
-// 6. Define Buttons
-var _btn_h = 60; 
 var _start_y = sidebar_y1 + 100;
+var _btn_h = 60;
 var _spacing = 10;
 
 btn_ranked_x1 = sidebar_x1 + 10;
