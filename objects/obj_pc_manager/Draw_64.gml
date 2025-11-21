@@ -5,7 +5,7 @@ draw_set_halign(fa_left);
 draw_set_valign(fa_top);
 
 // 1. INHERIT PARENT (Draws Window Background, Title Bar, Close Button, Border)
-event_inherited(); 
+event_inherited();
 
 var _mx = device_mouse_x_to_gui(0);
 var _my = device_mouse_y_to_gui(0);
@@ -42,13 +42,14 @@ draw_border_95(team_list_x1, team_list_y1, team_list_x2, team_list_y2, "sunken")
 gpu_set_scissor(team_list_x1 + 2, team_list_y1 + 2, team_list_w - 4, team_list_h - 4);
 draw_set_halign(fa_left);
 draw_set_valign(fa_top);
+
 for (var i = team_top_index; i < array_length(global.PlayerData.team); i++) {
     // Skip if dragging this specific item
     if (i == held_critter_index && is_dragging_critter) continue;
-    
+
     var _draw_y = team_list_y1 + 2 + ((i - team_top_index) * team_item_height);
     if (_draw_y > team_list_y2 - team_item_height) break;
-    
+
     var _critter = global.PlayerData.team[i];
     if (i == team_selected_index) {
         draw_set_color(c_navy);
@@ -80,6 +81,7 @@ draw_border_95(pc_list_x1, pc_list_y1, pc_list_x2, pc_list_y2, "sunken");
 
 gpu_set_scissor(pc_list_x1 + 2, pc_list_y1 + 2, pc_list_w - 4, pc_list_h - 4);
 draw_set_valign(fa_middle);
+
 var _critter_count = array_length(global.PlayerData.pc_box);
 var _max_rows = ceil(_critter_count / pc_grid_cols);
 
@@ -102,11 +104,15 @@ for (var i = pc_scroll_top; i < _max_rows; i++) {
         var _sprite = _critter.sprite_idle;
         var _sprite_w = sprite_get_width(_sprite);
         var _sprite_h = sprite_get_height(_sprite);
+        
         var _scale = min((pc_grid_cell_size - 10) / _sprite_w, (pc_grid_cell_size - 10) / _sprite_h);
+        
         var _cell_center_x = _cell_x1 + (pc_grid_cell_size / 2);
         var _cell_center_y = _cell_y1 + (pc_grid_cell_size / 2);
         var _draw_y = _cell_center_y + ((_sprite_h / 2) * _scale);
+        
         var _frame = pc_anim_frame % sprite_get_number(_sprite);
+        
         draw_sprite_ext(_sprite, _frame, _cell_center_x, _draw_y, _scale, _scale, 0, c_white, 1);
     }
 }
@@ -118,6 +124,7 @@ if (preview_critter != noone) {
     var _panel_w = 150;
     var _panel_x1 = _mid_x - (_panel_w / 2);
     var _panel_y1 = window_y1 + 80;
+    
     var _frame_w = _panel_w - 20;
     var _frame_h = 100;
     var _frame_x1 = _mid_x - (_frame_w / 2);
@@ -138,6 +145,7 @@ if (preview_critter != noone) {
     var _box_w = _frame_w - 8;
     var _box_h = _frame_h - 8;
     var _scale = min(_box_w / _sprite_w, _box_h / _sprite_h);
+    
     var _sprite_x = _mid_x;
     var _draw_y = (_frame_y1 + (_frame_h / 2)) + ((_sprite_h / 2) * _scale);
     
@@ -148,10 +156,42 @@ if (preview_critter != noone) {
     var _text_y_start = _frame_y2 + 15;
     draw_set_halign(fa_center);
     draw_set_valign(fa_top);
-    draw_set_color(c_white);
-    draw_set_font(fnt_vga_bold);
-    draw_text(_mid_x, _text_y_start, preview_critter.nickname);
+    
+    // --- RENAMING DRAW LOGIC ---
+    if (is_renaming) {
+        // Draw Input Box
+        var _in_w = 130;
+        var _in_h = 24;
+        draw_set_color(c_white);
+        draw_rectangle(_mid_x - _in_w/2, _text_y_start - 2, _mid_x + _in_w/2, _text_y_start + _in_h - 2, false);
+        draw_border_95(_mid_x - _in_w/2, _text_y_start - 2, _mid_x + _in_w/2, _text_y_start + _in_h - 2, "sunken");
+        
+        // Draw Text + Cursor
+        draw_set_color(c_black);
+        draw_set_font(fnt_vga_bold);
+        var _cursor = ((cursor_timer div 30) % 2 == 0) ? "_" : "";
+        draw_text(_mid_x, _text_y_start, rename_input + _cursor);
+    } 
+    else {
+        // Standard Drawing
+        if (name_area_hover) {
+            // Hover visual cue (Yellow box)
+            draw_set_color(c_dkgray);
+            draw_set_alpha(0.5);
+            draw_roundrect(_mid_x - 65, _text_y_start - 2, _mid_x + 65, _text_y_start + 20, false);
+            draw_set_alpha(1.0);
+            draw_set_color(c_yellow); // Text turns yellow on hover
+        } else {
+            draw_set_color(c_white);
+        }
+        
+        draw_set_font(fnt_vga_bold);
+        draw_text(_mid_x, _text_y_start, preview_critter.nickname);
+    }
+    // ---------------------------
+
     draw_set_font(fnt_vga);
+    draw_set_color(c_white);
     draw_text(_mid_x, _text_y_start + 20, "Lv. " + string(preview_critter.level));
     
     draw_set_halign(fa_left);

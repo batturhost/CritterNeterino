@@ -78,3 +78,11 @@ btn_to_pc_x1 = _mid_x - (btn_w / 2);
 btn_to_pc_y1 = btn_to_team_y2 + 10;
 btn_to_pc_x2 = btn_to_pc_x1 + btn_w;
 btn_to_pc_y2 = btn_to_pc_y1 + btn_h;
+
+
+// 9. Renaming Variables (NEW)
+is_renaming = false;
+rename_input = "";
+max_name_length = 12;
+cursor_timer = 0;
+name_area_hover = false;
